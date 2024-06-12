@@ -31,10 +31,19 @@ import {
 
 import Logger from "@/utils/logger";
 
+export const getRandomHexColor = () => {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 const DEFAULT_USER = {
-  level: 1,
-  streak: 0,
-  xp: 0,
+  balance: 1000,
+  color: getRandomHexColor(),
+  joined: new Date(),
 };
 
 const logger = new Logger({ debugEnabled: false }); // switch to true to see console logs from firebase

@@ -96,7 +96,7 @@ const ReusableLayout = observer(({ children }) => {
   const pathname = usePathname();
   const isRoute = (route) => {
     if (route === "/") {
-      return pathname.toLowerCase() === `/${route.toLowerCase()}`
+      return pathname.toLowerCase() === `${route.toLowerCase()}`
         ? "default"
         : "ghost";
     }

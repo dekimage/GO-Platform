@@ -1,15 +1,38 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ref, onValue, set } from "firebase/database";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { ref, onValue, set, push, get, update } from "firebase/database";
+import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 import { realtimeDb, db } from "../firebase";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { Ticket } from "lucide-react";
+import { Ticket, X } from "lucide-react";
 import MobxStore from "@/mobx";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { runInAction } from "mobx";
+
+export const pickWinner = (entries) => {
+  const ticketPool = [];
+  entries.forEach((entry) => {
+    for (let i = 0; i < entry.ticketAmount; i++) {
+      ticketPool.push(entry.userID);
+    }
+  });
+  const winnerIndex = Math.floor(Math.random() * ticketPool.length);
+  return ticketPool[winnerIndex];
+};
 
 const formatTimeAgo = (date) => {
   const distance = formatDistanceToNow(date, { addSuffix: true });
@@ -22,22 +45,10 @@ const formatTimeAgo = (date) => {
     .replace(" ago", "");
 };
 
-const getRandomColor = () => {
-  const colors = [
-    "bg-red-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
 const EntryDetails = ({ entries, contest, users }) => {
   return (
     <ul>
       {entries.map((entry, index) => {
-        const userColor = getRandomColor();
         const userTicketsPercent =
           (entry.ticketAmount /
             Math.max(...entries.map((e) => e.ticketAmount))) *
@@ -47,17 +58,21 @@ const EntryDetails = ({ entries, contest, users }) => {
 
         return (
           <li key={index} className="border p-2 rounded mt-1">
-            <span
-              className={`inline-block w-4 h-4 rounded-full ${userColor} mr-2`}
-            ></span>
             <div className="flex justify-between">
-              <div> {users[entry.userID]?.username || entry.userID}</div>
+              <div className="flex items-center">
+                <span
+                  style={{ backgroundColor: users[entry.userID]?.color }}
+                  className={`inline-block w-4 h-4 rounded-full mr-2`}
+                ></span>{" "}
+                <Link className="underline" href={`/user/${entry.userID}`}>
+                  {users[entry.userID]?.username || entry.userID}
+                </Link>
+              </div>
               <div className="text-sm text-gray-400">
-                {" "}
                 {formatTimeAgo(new Date(entry.datetime))} ago
               </div>
             </div>
-            -{" "}
+
             <div className="flex mb-2 items-center justify-between mt-2">
               <div className="flex w-fit text-xs items-center gap-2 font-semibold  py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
                 {winningChance.toFixed(2)}%
@@ -98,26 +113,162 @@ export default function Contests() {
   const [ticketQty, setTicketQty] = useState(1);
 
   const [showModal, setShowModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const getProductName = (productId) => {
+    return products[productId]?.name || "Product";
+  };
+
+  const handleContestCompletion = async (contestId) => {
+    // Get contest details
+    const contestRef = ref(realtimeDb, `contests/${contestId}`);
+    const contestSnapshot = await get(contestRef);
+    const contestData = contestSnapshot.val();
+
+    // Determine the winner
+    const winnerUserId = pickWinner(Object.values(contestData.entries));
+    console.log({ winnerUserId });
+
+    // Update contest status
+    await update(contestRef, {
+      status: "finished",
+    });
+
+    // Create log in Firestore
+    const logData = {
+      contestId,
+      productId: contestData.productId,
+      winnerUserId,
+      entries: contestData.entries,
+      total: contestData.total,
+      accumulated: contestData.accumulated,
+      entryFee: contestData.entryFee,
+      datetime: new Date().toISOString(),
+    };
+    console.log({ logData });
+    const logsCollectionRef = collection(db, "logs");
+    await addDoc(logsCollectionRef, logData);
+
+    // Update user stats
+    const updateUserStats = async (userId, isWinner) => {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        await updateDoc(userRef, {
+          totalContests: (userData.totalContests || 0) + 1,
+          contestsWon: isWinner
+            ? (userData.contestsWon || 0) + 1
+            : userData.contestsWon || 0,
+        });
+      }
+    };
+
+    // Update stats for all participants
+    const allUserIds = Object.values(contestData.entries).map(
+      (entry) => entry.userID
+    );
+    const uniqueUserIds = [...new Set(allUserIds)];
+    await Promise.all(
+      uniqueUserIds.map((userId) =>
+        updateUserStats(userId, userId === winnerUserId)
+      )
+    );
+  };
 
   const handleEnterContest = async () => {
     if (ticketQty * selectedContest.entryFee > userBalance) return;
 
-    const newEntry = {
-      datetime: new Date().toISOString(),
-      userID: MobxStore.user.id,
-      ticketAmount: ticketQty,
-    };
-    console.log({ selectedContest });
-    const contestRef = ref(realtimeDb, `contests/${selectedContest.id}`);
-    await set(contestRef, {
-      ...selectedContest,
-      entries: [...selectedContest.entries, newEntry],
-      accumulated:
-        selectedContest.accumulated + ticketQty * selectedContest.entryFee,
+    const maxTickets = Math.floor(
+      (selectedContest.total - selectedContest.accumulated) /
+        selectedContest.entryFee
+    );
+
+    if (ticketQty > maxTickets) {
+      console.log("Cannot buy more tickets than available.");
+      return;
+    }
+
+    const userId = MobxStore.user.uid;
+
+    if (!userId) {
+      console.log("User ID is undefined");
+      return;
+    }
+
+    const contestRef = ref(
+      realtimeDb,
+      `contests/${selectedContest.id}/entries`
+    );
+    const entriesSnapshot = await get(contestRef);
+    const entriesData = entriesSnapshot.val() || {};
+
+    let existingEntryKey = null;
+    let existingEntry = null;
+
+    // Check if an entry for the user already exists
+    for (const key in entriesData) {
+      if (entriesData[key].userID === userId) {
+        existingEntryKey = key;
+        existingEntry = entriesData[key];
+        break;
+      }
+    }
+
+    if (existingEntry) {
+      // Update the existing entry
+      const updatedEntry = {
+        ...existingEntry,
+        datetime: new Date().toISOString(),
+        ticketAmount: existingEntry.ticketAmount + ticketQty,
+      };
+      await set(
+        ref(
+          realtimeDb,
+          `contests/${selectedContest.id}/entries/${existingEntryKey}`
+        ),
+        updatedEntry
+      );
+    } else {
+      // Create a new entry
+      const newEntry = {
+        datetime: new Date().toISOString(),
+        userID: userId,
+        ticketAmount: ticketQty,
+      };
+      const newEntryRef = push(contestRef);
+      await set(newEntryRef, newEntry);
+    }
+
+    // Update the accumulated amount
+    const accumulatedRef = ref(
+      realtimeDb,
+      `contests/${selectedContest.id}/accumulated`
+    );
+    await set(
+      accumulatedRef,
+      selectedContest.accumulated + ticketQty * selectedContest.entryFee
+    );
+
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      balance: userBalance - ticketQty * selectedContest.entryFee,
+    });
+    runInAction(() => {
+      MobxStore.user.balance =
+        userBalance - ticketQty * selectedContest.entryFee;
     });
 
     setShowModal(false);
     setTicketQty(1);
+
+    // trigger end of contest
+    const newAccumulated =
+      selectedContest.accumulated + ticketQty * selectedContest.entryFee;
+    console.log(123, newAccumulated, selectedContest.total);
+    if (newAccumulated >= selectedContest.total) {
+      await handleContestCompletion(selectedContest.id);
+    }
   };
 
   useEffect(() => {
@@ -141,10 +292,14 @@ export default function Contests() {
     onValue(contestsRef, async (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const contestsArray = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
+        const contestsArray = Object.keys(data).map((key) => {
+          const contest = data[key];
+          return {
+            id: key,
+            ...contest,
+            entries: contest.entries ? Object.values(contest.entries) : [],
+          };
+        });
 
         const productPromises = contestsArray.map(async (contest) => {
           const productRef = doc(collection(db, "products"), contest.productId);
@@ -173,14 +328,48 @@ export default function Contests() {
     });
   }, []);
 
+  const searchParams = useSearchParams();
+  const productId = searchParams.get("productId");
+  const router = useRouter();
+
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6">Contests</h1>
+      {productId && (
+        <div className="my-4">
+          <Badge
+            className="cursor-pointer"
+            onClick={() =>
+              router.replace("/", undefined, {
+                shallow: true,
+              })
+            }
+          >
+            {getProductName(productId)}
+            <div className="ml-2 w-4 h-4 flex items-center justify-center rounded-full border border-transparent  cursor-pointer transition duration-300">
+              <X size="14px" />
+            </div>
+          </Badge>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {contests.map((contest) => {
           const product = products[contest.productId];
           const accumulatedPercent =
             (contest.accumulated / contest.total) * 100;
+
+          const entriesArray = contest?.entries
+            ? Object.values(contest.entries)
+            : [];
+
+          const maxTicketsByBalance = Math.floor(
+            userBalance / selectedContest?.entryFee
+          );
+          const maxTicketsAvailable = Math.floor(
+            (selectedContest?.total - selectedContest?.accumulated) /
+              selectedContest?.entryFee
+          );
+          const maxTickets = Math.min(maxTicketsByBalance, maxTicketsAvailable);
 
           return (
             <Card key={contest.id} className="shadow-md rounded-lg p-4">
@@ -189,17 +378,121 @@ export default function Contests() {
                 alt={product?.name}
                 width={300}
                 height={200}
-                className="w-full h-48 object-cover rounded-t-lg"
+                className="w-auto h-48 object-cover rounded-t-lg"
               />
               <h2 className="text-xl font-semibold mt-2">{product?.name}</h2>
               <div className="flex gap-2 items-center w-full justify-between">
                 <p className="text-gray-700">Total Goal: ${contest.total}</p>
                 <p className="text-gray-700">Entry Fee: ${contest.entryFee}</p>
               </div>
+              <p className="text-gray-700">
+                Tickets Left: x
+                {(contest.total - contest.accumulated) / contest.entryFee}
+              </p>
 
-              <button className="bg-blue-500 text-white py-2 px-4 rounded mt-2">
-                Enter - ${contest.entryFee}
-              </button>
+              <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sign in to enter contest</DialogTitle>
+                    <DialogDescription>
+                      You need to sign in to enter this contest
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAuthModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        router.push("/login", undefined, { shallow: true })
+                      }
+                    >
+                      Sign in
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={showModal} onOpenChange={setShowModal}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle> Enter this contest</DialogTitle>
+                    <DialogDescription>
+                      How many tickets would you like to buy? (Max: {maxTickets}
+                      )
+                    </DialogDescription>
+                    <div className="flex gap-4 flex-col">
+                      <div className="flex items-center mt-8">
+                        <button
+                          onClick={() =>
+                            setTicketQty((prev) => Math.max(1, prev - 1))
+                          }
+                          className="px-4 py-2 border rounded-l"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          value={ticketQty}
+                          onChange={(e) => {
+                            const value = Math.max(1, Number(e.target.value));
+                            setTicketQty(Math.min(value, maxTickets));
+                          }}
+                          className="w-fit h-[42px] text-center border-t border-b border-gray-200"
+                        />
+                        <button
+                          onClick={() =>
+                            setTicketQty((prev) =>
+                              Math.min(prev + 1, maxTickets)
+                            )
+                          }
+                          className="px-4 py-2 border rounded-r"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => setTicketQty(maxTickets)}
+                        className="px-4 py-2 mt-2 bg-blue-500 text-white rounded"
+                      >
+                        Buy Max ({maxTickets})
+                      </button>
+                      <p>Available Tickets: {maxTicketsAvailable}</p>
+                      <p>Ticket Fee: ${selectedContest?.entryFee}</p>
+                      <p>Your Balance: ${userBalance}</p>
+                      <p>
+                        Total Price: ${ticketQty * selectedContest?.entryFee}
+                      </p>
+                      {ticketQty * selectedContest?.entryFee > userBalance && (
+                        <>
+                          <p className="text-red-500">Insufficient coins</p>
+                          <Button>+ Buy Coins</Button>
+                        </>
+                      )}
+                    </div>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleEnterContest}
+                      disabled={
+                        ticketQty * selectedContest?.entryFee > userBalance
+                      }
+                    >
+                      Enter
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               <div className="mt-4">
                 <div className="relative pt-1">
                   <div className="flex mb-2 items-center justify-between">
@@ -222,103 +515,47 @@ export default function Contests() {
                   </div>
                 </div>
               </div>
+              {contest.status === "finished" ? (
+                <div className="p-2 uppercase rounded bg-yellow-200 text-yellow-700 text-xs text-center">
+                  finished
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    if (!MobxStore.user) {
+                      return setShowAuthModal(true);
+                    }
+
+                    setSelectedContest(contest);
+                    setShowModal(true);
+                  }}
+                  className="w-full mt-2"
+                >
+                  Enter - ${contest.entryFee}
+                </Button>
+              )}
+
               <div className="mt-4">
-                <h3 className="text-lg font-medium">Top Entries</h3>
+                {/* <h3 className="text-lg font-medium">Top Entries</h3>
                 <EntryDetails
-                  entries={[...contest.entries]
+                  entries={entriesArray
                     .sort((a, b) => b.ticketAmount - a.ticketAmount)
                     .slice(0, 3)}
                   contest={contest}
                   users={users}
-                />
+                /> */}
 
                 <details className="mt-2">
                   <summary className="text-blue-500 cursor-pointer">
-                    See all entries
+                    See Entries
                   </summary>
                   <EntryDetails
-                    entries={contest.entries}
-                    users={users}
+                    entries={entriesArray}
                     contest={contest}
+                    users={users}
                   />
                 </details>
               </div>
-
-              <Dialog>
-                <DialogTrigger>
-                  <Button
-                    onClick={() => {
-                      setSelectedContest(contest);
-                      setShowModal(true);
-                    }}
-                    className="bg-blue-500 text-white py-2 px-4 rounded mt-2"
-                  >
-                    Enter - ${contest.entryFee}
-                  </Button>
-                </DialogTrigger>
-                {showModal && selectedContest && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-background p-6 rounded shadow-lg w-96">
-                      <h2 className="text-2xl font-semibold mb-4">
-                        Enter this contest
-                      </h2>
-                      <p>How many tickets would you like to buy?</p>
-                      <div className="flex items-center mt-4 mb-4">
-                        <button
-                          onClick={() =>
-                            setTicketQty(Math.max(1, ticketQty - 1))
-                          }
-                          className="px-4 py-2  rounded-l"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          value={ticketQty}
-                          onChange={(e) =>
-                            setTicketQty(Math.max(1, Number(e.target.value)))
-                          }
-                          className="w-full text-center border-t border-b border-gray-200"
-                        />
-                        <button
-                          onClick={() => setTicketQty(ticketQty + 1)}
-                          className="px-4 py-2  rounded-r"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <p>Current Balance: ${userBalance}</p>
-                      <p>
-                        Total Price: ${ticketQty * selectedContest.entryFee}
-                      </p>
-                      {ticketQty * selectedContest.entryFee > userBalance && (
-                        <p className="text-red-500">Insufficient funds</p>
-                      )}
-                      <div className="flex justify-end mt-4">
-                        <button
-                          onClick={() => setShowModal(false)}
-                          className="mr-2 px-4 py-2 bg-gray-300 rounded"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleEnterContest}
-                          className={`px-4 py-2 rounded ${
-                            ticketQty * selectedContest.entryFee > userBalance
-                              ? "bg-gray-300"
-                              : "bg-blue-500 text-white"
-                          }`}
-                          disabled={
-                            ticketQty * selectedContest.entryFee > userBalance
-                          }
-                        >
-                          Enter
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Dialog>
             </Card>
           );
         })}

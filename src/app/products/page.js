@@ -9,15 +9,17 @@ import Image from "next/image";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { TitleDescription } from "@/reusable-ui/TitleDescription";
+import { useRouter } from "next/navigation";
 
 const ProductCard = ({ product }) => {
+  const router = useRouter();
   return (
     <Card className="p-4 flex flex-col gap-4 w-[300px]">
       <CardTitle>{product.name}</CardTitle>
       <CardDescription>{product.description}</CardDescription>
       <div className="bont-bold text-lg">${product.price}</div>
       <Image src={product.image} alt={product.name} width={200} height={200} />
-      <Button>
+      <Button onClick={() => router.push(`/?productId=${product.id}`)}>
         Find Contests <ChevronRight />
       </Button>
     </Card>
