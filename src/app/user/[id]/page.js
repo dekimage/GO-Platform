@@ -12,6 +12,7 @@ import { observer } from "mobx-react-lite";
 import { useParams, useRouter } from "next/navigation";
 import MobxStore from "@/mobx";
 import { db } from "@/firebase";
+import Link from "next/link";
 
 const Profile = observer(() => {
   const router = useRouter();
@@ -92,13 +93,11 @@ const Profile = observer(() => {
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6">Profile</h1>
-      <div className="bg-white shadow-md rounded-lg p-4">
+      <div className="shadow-md rounded-lg p-4 border">
         <h2 className="text-2xl font-semibold mb-4">{user.username}</h2>
-        <p className="text-gray-700">
-          Total Contests: {userStats.totalContests}
-        </p>
-        <p className="text-gray-700">Contests Won: {userStats.totalWon}</p>
-        <p className="text-gray-700">
+        <p className="">Total Contests: {userStats.totalContests}</p>
+        <p className="">Contests Won: {userStats.totalWon}</p>
+        <p className="">
           Color:{" "}
           <span
             style={{ backgroundColor: user.color }}
@@ -109,31 +108,47 @@ const Profile = observer(() => {
       <h3 className="text-2xl font-semibold mt-6 mb-4">Contest History</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {logs.map((log, index) => (
-          <div key={index} className="bg-white shadow-md rounded-lg p-4">
+          <div key={index} className="shadow-md rounded-lg p-4 border">
             <h4 className="text-xl font-semibold mb-2">
               Contest {log.contestId}
             </h4>
-            <p className="text-gray-700">
-              Product: {products[log.productId]?.name}
+            <p className="">Product: {products[log.productId]?.name}</p>
+            <p className="">Total: ${log.total}</p>
+            <p className="">Accumulated: ${log.accumulated}</p>
+            <p className="">
+              Winner:{" "}
+              {log.winnerUserId === userId ? (
+                "You"
+              ) : (
+                <Link href={`/user/${log.winnerUserId}`}>
+                  <div className="underline">
+                    User-{log.winnerUserId.slice(0, 6)}
+                  </div>
+                </Link>
+              )}
             </p>
-            <p className="text-gray-700">Total: ${log.total}</p>
-            <p className="text-gray-700">Accumulated: ${log.accumulated}</p>
-            <p className="text-gray-700">
-              Winner: {log.winnerUserId === userId ? "You" : log.winnerUserId}
-            </p>
-            <p className="text-gray-700">
-              Date: {new Date(log.datetime).toLocaleString()}
-            </p>
+            <p className="">Date: {new Date(log.datetime).toLocaleString()}</p>
             <div className="mt-4">
               <h5 className="text-lg font-medium">Entries:</h5>
-              <ul>
-                {Object.values(log.entries).map((entry, idx) => (
-                  <li key={idx} className="text-gray-600">
-                    {entry.userID === userId ? "You" : entry.userID}:{" "}
-                    {entry.ticketAmount} tickets
-                  </li>
-                ))}
-              </ul>
+              <div>
+                {Object.values(log.entries).map((entry, idx) => {
+                  return (
+                    <div key={idx} className="">
+                      {entry.userID === userId ? (
+                        "You"
+                      ) : (
+                        <Link href={`/user/${entry.userID}`}>
+                          <div className="underline">
+                            {" "}
+                            User-{entry.userID.slice(0, 6)}
+                          </div>
+                        </Link>
+                      )}
+                      : {entry.ticketAmount} tickets
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ))}

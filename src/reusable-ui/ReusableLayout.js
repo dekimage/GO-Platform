@@ -4,16 +4,7 @@ import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Separator } from "@/components/ui/separator";
 import { VerticalNavbar } from "./VerticalNavbar";
 
-import {
-  BookOpen,
-  PackageSearch,
-  Ticket,
-  ListMinus,
-  Plus,
-  Search,
-  SearchCheck,
-  UserIcon,
-} from "lucide-react";
+import { PackageSearch, Ticket, UserIcon } from "lucide-react";
 import MobxStore from "../mobx";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
@@ -25,73 +16,13 @@ import Image from "next/image";
 import logoImg from "../assets/logo.png";
 
 import MobileHeader from "./MobileHeader";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+
 import { ModeToggle } from "@/components/ui/themeButton";
 
 const defaultLayout = [20, 80];
 
-const CreateListDialog = () => {
-  const [listName, setListName] = useState("");
-  const { addList } = MobxStore;
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-          <Plus size={16} className="mr-2" /> Create List
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New List</DialogTitle>
-          <DialogDescription>
-            Store different pathways across custom lists.
-          </DialogDescription>
-        </DialogHeader>
-        <div>
-          <div className="space-y-4 py-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">List Name</Label>
-              <Input
-                id="name"
-                placeholder="Morning Routine"
-                onChange={(e) => setListName(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowDialog(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            onClick={() => {
-              // setShowDialog(false);
-              addList(listName);
-            }}
-          >
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 const ReusableLayout = observer(({ children }) => {
-  const { user, lists, logout } = MobxStore;
+  const { user, logout } = MobxStore;
 
   const pathname = usePathname();
   const isRoute = (route) => {
@@ -142,26 +73,11 @@ const ReusableLayout = observer(({ children }) => {
                 {
                   title: "Profile",
                   icon: UserIcon,
-                  variant: isRoute("profile"),
-                  href: "profile",
+                  variant: isRoute(`user/${MobxStore.user?.uid}`),
+                  href: `user/${MobxStore.user?.uid}`,
                 },
               ]}
             />
-            <Separator />
-            <div className="flex justify-center items-center w-[185px] m-2">
-              <CreateListDialog />
-            </div>
-
-            {lists.length > 0 && (
-              <VerticalNavbar
-                links={lists.map((list) => ({
-                  title: list.name,
-                  icon: ListMinus,
-                  variant: isRoute(list.id),
-                  href: `list/${list.id}`,
-                }))}
-              />
-            )}
           </ResizablePanel>
           {/* <ResizableHandle /> */}
           <ResizablePanel

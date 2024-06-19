@@ -353,190 +353,198 @@ export default function Contests() {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contests.map((contest) => {
-          const product = products[contest.productId];
-          const accumulatedPercent =
-            (contest.accumulated / contest.total) * 100;
+        {contests
+          .filter((contest) => !productId || contest.productId === productId)
+          .map((contest) => {
+            const product = products[contest.productId];
+            const accumulatedPercent =
+              (contest.accumulated / contest.total) * 100;
 
-          const entriesArray = contest?.entries
-            ? Object.values(contest.entries)
-            : [];
+            const entriesArray = contest?.entries
+              ? Object.values(contest.entries)
+              : [];
 
-          const maxTicketsByBalance = Math.floor(
-            userBalance / selectedContest?.entryFee
-          );
-          const maxTicketsAvailable = Math.floor(
-            (selectedContest?.total - selectedContest?.accumulated) /
-              selectedContest?.entryFee
-          );
-          const maxTickets = Math.min(maxTicketsByBalance, maxTicketsAvailable);
+            const maxTicketsByBalance = Math.floor(
+              userBalance / selectedContest?.entryFee
+            );
+            const maxTicketsAvailable = Math.floor(
+              (selectedContest?.total - selectedContest?.accumulated) /
+                selectedContest?.entryFee
+            );
+            const maxTickets = Math.min(
+              maxTicketsByBalance,
+              maxTicketsAvailable
+            );
 
-          return (
-            <Card key={contest.id} className="shadow-md rounded-lg p-4">
-              <Image
-                src={product?.image}
-                alt={product?.name}
-                width={300}
-                height={200}
-                className="w-auto h-48 object-cover rounded-t-lg"
-              />
-              <h2 className="text-xl font-semibold mt-2">{product?.name}</h2>
-              <div className="flex gap-2 items-center w-full justify-between">
-                <p className="text-gray-700">Total Goal: ${contest.total}</p>
-                <p className="text-gray-700">Entry Fee: ${contest.entryFee}</p>
-              </div>
-              <p className="text-gray-700">
-                Tickets Left: x
-                {(contest.total - contest.accumulated) / contest.entryFee}
-              </p>
+            return (
+              <Card key={contest.id} className="shadow-md rounded-lg p-4">
+                <Image
+                  src={product?.image}
+                  alt={product?.name}
+                  width={300}
+                  height={200}
+                  className="w-auto h-48 object-cover rounded-t-lg"
+                />
+                <h2 className="text-xl font-semibold mt-2">{product?.name}</h2>
+                <div className="flex gap-2 items-center w-full justify-between">
+                  <p className="text-gray-700">Total Goal: ${contest.total}</p>
+                  <p className="text-gray-700">
+                    Entry Fee: ${contest.entryFee}
+                  </p>
+                </div>
+                <p className="text-gray-700">
+                  Tickets Left: x
+                  {(contest.total - contest.accumulated) / contest.entryFee}
+                </p>
 
-              <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Sign in to enter contest</DialogTitle>
-                    <DialogDescription>
-                      You need to sign in to enter this contest
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAuthModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        router.push("/login", undefined, { shallow: true })
-                      }
-                    >
-                      Sign in
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle> Enter this contest</DialogTitle>
-                    <DialogDescription>
-                      How many tickets would you like to buy? (Max: {maxTickets}
-                      )
-                    </DialogDescription>
-                    <div className="flex gap-4 flex-col">
-                      <div className="flex items-center mt-8">
-                        <button
-                          onClick={() =>
-                            setTicketQty((prev) => Math.max(1, prev - 1))
-                          }
-                          className="px-4 py-2 border rounded-l"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          value={ticketQty}
-                          onChange={(e) => {
-                            const value = Math.max(1, Number(e.target.value));
-                            setTicketQty(Math.min(value, maxTickets));
-                          }}
-                          className="w-fit h-[42px] text-center border-t border-b border-gray-200"
-                        />
-                        <button
-                          onClick={() =>
-                            setTicketQty((prev) =>
-                              Math.min(prev + 1, maxTickets)
-                            )
-                          }
-                          className="px-4 py-2 border rounded-r"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => setTicketQty(maxTickets)}
-                        className="px-4 py-2 mt-2 bg-blue-500 text-white rounded"
+                <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Sign in to enter contest</DialogTitle>
+                      <DialogDescription>
+                        You need to sign in to enter this contest
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAuthModal(false)}
                       >
-                        Buy Max ({maxTickets})
-                      </button>
-                      <p>Available Tickets: {maxTicketsAvailable}</p>
-                      <p>Ticket Fee: ${selectedContest?.entryFee}</p>
-                      <p>Your Balance: ${userBalance}</p>
-                      <p>
-                        Total Price: ${ticketQty * selectedContest?.entryFee}
-                      </p>
-                      {ticketQty * selectedContest?.entryFee > userBalance && (
-                        <>
-                          <p className="text-red-500">Insufficient coins</p>
-                          <Button>+ Buy Coins</Button>
-                        </>
-                      )}
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          router.push("/login", undefined, { shallow: true })
+                        }
+                      >
+                        Sign in
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={showModal} onOpenChange={setShowModal}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle> Enter this contest</DialogTitle>
+                      <DialogDescription>
+                        How many tickets would you like to buy? (Max:{" "}
+                        {maxTickets})
+                      </DialogDescription>
+                      <div className="flex gap-4 flex-col">
+                        <div className="flex items-center mt-8">
+                          <button
+                            onClick={() =>
+                              setTicketQty((prev) => Math.max(1, prev - 1))
+                            }
+                            className="px-4 py-2 border rounded-l"
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            value={ticketQty}
+                            onChange={(e) => {
+                              const value = Math.max(1, Number(e.target.value));
+                              setTicketQty(Math.min(value, maxTickets));
+                            }}
+                            className="w-fit h-[42px] text-center border-t border-b border-gray-200"
+                          />
+                          <button
+                            onClick={() =>
+                              setTicketQty((prev) =>
+                                Math.min(prev + 1, maxTickets)
+                              )
+                            }
+                            className="px-4 py-2 border rounded-r"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <Button
+                          onClick={() => setTicketQty(maxTickets)}
+                          className="px-4 py-2 mt-2 rounded"
+                        >
+                          Buy Max ({maxTickets})
+                        </Button>
+                        <p>Available Tickets: {maxTicketsAvailable}</p>
+                        <p>Ticket Fee: ${selectedContest?.entryFee}</p>
+                        <p>Your Balance: ${userBalance}</p>
+                        <p>
+                          Total Price: ${ticketQty * selectedContest?.entryFee}
+                        </p>
+                        {ticketQty * selectedContest?.entryFee >
+                          userBalance && (
+                          <>
+                            <p className="text-red-500">Insufficient coins</p>
+                            <Button>+ Buy Coins</Button>
+                          </>
+                        )}
+                      </div>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowModal(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleEnterContest}
+                        disabled={
+                          ticketQty * selectedContest?.entryFee > userBalance
+                        }
+                      >
+                        Enter
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <div className="mt-4">
+                  <div className="relative pt-1">
+                    <div className="flex mb-2 items-center justify-between">
+                      <div>
+                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                          {accumulatedPercent.toFixed(2)}%
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-semibold inline-block text-blue-600">
+                          ${contest.accumulated} / ${contest.total}
+                        </span>
+                      </div>
                     </div>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleEnterContest}
-                      disabled={
-                        ticketQty * selectedContest?.entryFee > userBalance
+                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                      <div
+                        style={{ width: `${accumulatedPercent}%` }}
+                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                {contest.status === "finished" ? (
+                  <div className="p-2 uppercase rounded bg-yellow-200 text-yellow-700 text-xs text-center">
+                    finished
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      if (!MobxStore.user) {
+                        return setShowAuthModal(true);
                       }
-                    >
-                      Enter
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
 
-              <div className="mt-4">
-                <div className="relative pt-1">
-                  <div className="flex mb-2 items-center justify-between">
-                    <div>
-                      <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
-                        {accumulatedPercent.toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-semibold inline-block text-blue-600">
-                        ${contest.accumulated} / ${contest.total}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
-                    <div
-                      style={{ width: `${accumulatedPercent}%` }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              {contest.status === "finished" ? (
-                <div className="p-2 uppercase rounded bg-yellow-200 text-yellow-700 text-xs text-center">
-                  finished
-                </div>
-              ) : (
-                <Button
-                  onClick={() => {
-                    if (!MobxStore.user) {
-                      return setShowAuthModal(true);
-                    }
+                      setSelectedContest(contest);
+                      setShowModal(true);
+                    }}
+                    className="w-full mt-2"
+                  >
+                    Enter - ${contest.entryFee}
+                  </Button>
+                )}
 
-                    setSelectedContest(contest);
-                    setShowModal(true);
-                  }}
-                  className="w-full mt-2"
-                >
-                  Enter - ${contest.entryFee}
-                </Button>
-              )}
-
-              <div className="mt-4">
-                {/* <h3 className="text-lg font-medium">Top Entries</h3>
+                <div className="mt-4">
+                  {/* <h3 className="text-lg font-medium">Top Entries</h3>
                 <EntryDetails
                   entries={entriesArray
                     .sort((a, b) => b.ticketAmount - a.ticketAmount)
@@ -545,20 +553,20 @@ export default function Contests() {
                   users={users}
                 /> */}
 
-                <details className="mt-2">
-                  <summary className="text-blue-500 cursor-pointer">
-                    See Entries
-                  </summary>
-                  <EntryDetails
-                    entries={entriesArray}
-                    contest={contest}
-                    users={users}
-                  />
-                </details>
-              </div>
-            </Card>
-          );
-        })}
+                  <details className="mt-2">
+                    <summary className="text-blue-500 cursor-pointer">
+                      See Entries
+                    </summary>
+                    <EntryDetails
+                      entries={entriesArray}
+                      contest={contest}
+                      users={users}
+                    />
+                  </details>
+                </div>
+              </Card>
+            );
+          })}
       </div>
     </div>
   );
