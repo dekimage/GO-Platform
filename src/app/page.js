@@ -18,10 +18,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useRouter,
+  // useSearchParams
+} from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { runInAction } from "mobx";
+import { Suspense } from "react";
 
 export const pickWinner = (entries) => {
   const ticketPool = [];
@@ -328,34 +332,42 @@ export default function Contests() {
     });
   }, []);
 
-  const searchParams = useSearchParams();
-  const productId = searchParams.get("productId");
+  // const searchParams = useSearchParams();
+  // const productId = searchParams.get("productId");
+  // const productFromSearch = {
+  //   name: getProductName(productId) || "No Name",
+  //   id: productId || "1",
+  // };
   const router = useRouter();
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-6">Contests</h1>
-      {productId && (
-        <div className="my-4">
-          <Badge
-            className="cursor-pointer"
-            onClick={() =>
-              router.replace("/", undefined, {
-                shallow: true,
-              })
-            }
-          >
-            {getProductName(productId)}
-            <div className="ml-2 w-4 h-4 flex items-center justify-center rounded-full border border-transparent  cursor-pointer transition duration-300">
-              <X size="14px" />
-            </div>
-          </Badge>
-        </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contests
-          .filter((contest) => !productId || contest.productId === productId)
-          .map((contest) => {
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-3xl font-bold mb-6">Contests</h1>
+        {/* {productFromSearch.id && (
+          <div className="my-4">
+            <Badge
+              className="cursor-pointer"
+              onClick={() =>
+                router.replace("/", undefined, {
+                  shallow: true,
+                })
+              }
+            >
+              {productFromSearch.name}
+              <div className="ml-2 w-4 h-4 flex items-center justify-center rounded-full border border-transparent  cursor-pointer transition duration-300">
+                <X size="14px" />
+              </div>
+            </Badge>
+          </div>
+        )} */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* .filter(
+              (contest) =>
+                !productFromSearch.id ||
+                contest.productId === productFromSearch.id
+            ) */}
+          {contests.map((contest) => {
             const product = products[contest.productId];
             const accumulatedPercent =
               (contest.accumulated / contest.total) * 100;
@@ -567,7 +579,8 @@ export default function Contests() {
               </Card>
             );
           })}
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
