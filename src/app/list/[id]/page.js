@@ -1,15 +1,14 @@
 "use client";
 import { observer } from "mobx-react";
 import MobxStore from "@/mobx";
-import { PathwayCard, TitleDescription } from "../../page";
+
 import { PodcastEmptyPlaceholder } from "@/reusable-ui/EmptyList";
-import { MoreVertical, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/reusable-ui/ComboBox";
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -28,6 +27,7 @@ import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { TitleDescription } from "@/reusable-ui/TitleDescription";
 
 const CustomListPage = observer(({ params }) => {
   const { lists, deleteList, editListName } = MobxStore;
