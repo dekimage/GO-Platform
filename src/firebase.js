@@ -5,21 +5,18 @@ import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCs6RuCihqIh3TQvASOdaiBzAeO3KCR9Sw",
-  authDomain: "raffles-a9de5.firebaseapp.com",
-  projectId: "raffles-a9de5",
-  storageBucket: "raffles-a9de5.appspot.com",
-  messagingSenderId: "624989785233",
-  appId: "1:624989785233:web:7efcc9a3db1c4afda30330",
-  measurementId: "G-Z7M6C40W4V",
-  databaseURL:
-    "https://raffles-a9de5-default-rtdb.europe-west1.firebasedatabase.app",
+  apiKey: "AIzaSyCVDpes70r7L8mRTbr_mCfsACu6eEnFO08",
+  authDomain: "go-platform-7960b.firebaseapp.com",
+  projectId: "go-platform-7960b",
+  storageBucket: "go-platform-7960b.firebasestorage.app",
+  messagingSenderId: "223613173824",
+  appId: "1:223613173824:web:93dd769fc3d22877e9dfa5",
+  measurementId: "G-9NKX7EKXVS"
 };
 // const analytics = getAnalytics(app);
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const realtimeDb = getDatabase(app);
 const auth = getAuth(app);
 
-export { db, realtimeDb, auth };
+export { db, auth };

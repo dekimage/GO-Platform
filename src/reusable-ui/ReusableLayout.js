@@ -52,14 +52,14 @@ const ReusableLayout = observer(({ children }) => {
             <Link href="/" className="cursor-pointer">
               <div className="flex h-[52px] items-center justify-center px-2">
                 <Image src={logoImg} width={32} height={32} alt="logo" />
-                <div className="text-2xl font-bold ml-1">Raffles</div>
+                <div className="text-2xl font-bold ml-1">Galactic Omnivore</div>
               </div>
             </Link>
             <Separator />
             <VerticalNavbar
               links={[
                 {
-                  title: "Contests",
+                  title: "Dashboard",
                   icon: Ticket,
                   variant: isRoute("/"),
                   href: "",

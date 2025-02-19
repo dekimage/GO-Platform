@@ -31,18 +31,11 @@ import {
 
 import Logger from "@/utils/logger";
 
-export const getRandomHexColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
+
 
 const DEFAULT_USER = {
-  balance: 1000,
-  color: getRandomHexColor(),
+
+
   joined: new Date(),
 };
 
@@ -63,7 +56,7 @@ class Store {
 
   constructor() {
     makeAutoObservable(this);
-    this.seedFirestore = this.seedFirestore.bind(this);
+
     this.initializeAuth();
 
     this.setIsMobileOpen = this.setIsMobileOpen.bind(this);
@@ -109,44 +102,7 @@ class Store {
     });
   }
 
-  seedFirestore = async () => {
-    const products = [
-      {
-        name: "Apple iPhone 15, 128GB, Black",
-        description: "Latest iPhone model",
-        image:
-          "https://m.media-amazon.com/images/I/51PtFHUPjBL._AC_SL1000_.jpg",
-        price: 1000,
-        amazonId: "B0CMPMY9ZZ",
-      },
-      {
-        name: "Apple 2024 MacBook Air 13-inch",
-        description: "Light and powerful laptop",
-        image:
-          "https://m.media-amazon.com/images/I/71ItMeqpN3L._AC_SL1500_.jpg",
-        price: 1290,
-        amazonId: "B0CX22ZW1T",
-      },
-      {
-        name: "Apple 2023 MacBook Pro Laptop M3",
-        description: "High performance laptop",
-        image:
-          "https://m.media-amazon.com/images/I/61RJn0ofUsL._AC_SL1500_.jpg",
-        price: 2400,
-        amazonId: "B0CM5KK44S",
-      },
-      // Add more products as needed
-    ];
-    try {
-      const productsCollection = collection(db, "products");
-      for (const product of products) {
-        await addDoc(productsCollection, product);
-      }
-      console.log("Products added successfully");
-    } catch (error) {
-      console.error("Error adding products: ", error);
-    }
-  };
+
 
   // GLOBAL MOBX STATE
   setIsMobileOpen(isMobileOpen) {

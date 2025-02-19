@@ -33,8 +33,8 @@ const MobileHeader = observer(() => {
 
   return (
     <div className="flex justify-between items-center border-b relative h-[52px] z-10000 p-4">
-      <Image src={logoImg} alt="Raffles" width={40} height={40} />
-      <div className="font-bold">Raffles</div>
+      <Image src={logoImg} alt="Galactic Omnivore" width={40} height={40} />
+      <div className="font-bold">Galactic Omnivore</div>
       <Button onClick={toggleMenu} className="p-2">
         {isMobileOpen ? (
           <X className="h-6 w-6" />
