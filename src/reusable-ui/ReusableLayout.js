@@ -42,12 +42,12 @@ const ReusableLayout = observer(({ children }) => {
       <div className="hidden sm:block">
         <ResizablePanelGroup
           direction="horizontal"
-          className="h-full max-h-[950px] items-stretch"
+          className="h-full items-stretch"
         >
           <ResizablePanel
             defaultSize={defaultLayout[0]}
             maxSize={20}
-            className="max-w-[200px] min-w-[200px] h-[950px]"
+            className="max-w-[200px] min-w-[200px]"
           >
             <Link href="/" className="cursor-pointer">
               <div className="flex h-[52px] items-center justify-center px-2">
