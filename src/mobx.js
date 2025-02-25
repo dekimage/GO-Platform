@@ -31,11 +31,7 @@ import {
 
 import Logger from "@/utils/logger";
 
-
-
 const DEFAULT_USER = {
-
-
   joined: new Date(),
 };
 
@@ -48,6 +44,12 @@ class Store {
   user = null;
 
   // Static Data
+  // Wordpress
+  blogs = [];
+  blogDetails = new Map();
+  blogsLoading = false;
+  blogDetailsLoading = new Map();
+  blogsFetched = false;
 
   lists = [];
   // App States
@@ -102,8 +104,6 @@ class Store {
     });
   }
 
-
-
   // GLOBAL MOBX STATE
   setIsMobileOpen(isMobileOpen) {
     runInAction(() => {
@@ -121,6 +121,57 @@ class Store {
     } catch (error) {
       console.error("Error updating user:", error);
     }
+  }
+
+  // WORDPRESS FUNCTIONS
+  async fetchBlogs() {
+    if (this.blogsLoading || this.blogsFetched) return;
+    this.blogsLoading = true;
+    try {
+      const response = await fetch("/api/wordpress");
+      if (!response.ok) throw new Error("Failed to fetch blogs");
+      const data = await response.json();
+      runInAction(() => {
+        this.blogs = data;
+        this.blogsFetched = true;
+        this.blogsLoading = false;
+      });
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+      runInAction(() => {
+        this.blogsLoading = false;
+      });
+    }
+  }
+
+  async fetchBlogDetails(slug) {
+    if (this.blogDetails.has(slug)) return this.blogDetails.get(slug);
+    if (this.blogDetailsLoading.get(slug)) return;
+
+    runInAction(() => {
+      this.blogDetailsLoading.set(slug, true);
+    });
+
+    try {
+      const response = await fetch(`/api/wordpress?slug=${slug}`);
+      if (!response.ok) throw new Error("Failed to fetch blog details");
+      const data = await response.json();
+      runInAction(() => {
+        this.blogDetails.set(slug, data);
+        this.blogDetailsLoading.set(slug, false);
+      });
+      return data;
+    } catch (error) {
+      console.error("Error fetching blog details:", error);
+      runInAction(() => {
+        this.blogDetailsLoading.set(slug, false);
+      });
+    }
+  }
+
+  // Getter for checking if a specific blog's details are loading
+  isBlogDetailsLoading(slug) {
+    return this.blogDetailsLoading.get(slug) || false;
   }
 
   //
