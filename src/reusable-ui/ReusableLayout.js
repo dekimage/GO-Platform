@@ -15,16 +15,23 @@ import { UserNav } from "./ReusableProfileMenu";
 import Image from "next/image";
 import logoImg from "../assets/logo.png";
 
-import MobileHeader from "./MobileHeader";
-
 import { ModeToggle } from "@/components/ui/themeButton";
-
-const defaultLayout = [20, 80];
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const ReusableLayout = observer(({ children }) => {
   const { user, logout } = MobxStore;
 
   const pathname = usePathname();
+
+  // Check if we're on an admin route
+  const isAdminRoute = pathname?.startsWith("/admin");
+
+  // If we're on an admin route, just render the children without the layout
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
+
   const isRoute = (route) => {
     if (route === "/") {
       return pathname.toLowerCase() === `${route.toLowerCase()}`
@@ -38,89 +45,10 @@ const ReusableLayout = observer(({ children }) => {
   };
 
   return (
-    <div>
-      <div className="hidden sm:block">
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="h-full items-stretch"
-        >
-          <ResizablePanel
-            defaultSize={defaultLayout[0]}
-            maxSize={20}
-            className="max-w-[200px] min-w-[200px]"
-          >
-            <Link href="/" className="cursor-pointer">
-              <div className="flex h-[52px] items-center justify-center px-2">
-                <Image src={logoImg} width={32} height={32} alt="logo" />
-                <div className="text-2xl font-bold ml-1">Galactic Omnivore</div>
-              </div>
-            </Link>
-            <Separator />
-            <VerticalNavbar
-              links={[
-                {
-                  title: "Dashboard",
-                  icon: Ticket,
-                  variant: isRoute("/"),
-                  href: "",
-                },
-                {
-                  title: "Products",
-                  icon: PackageSearch,
-                  variant: isRoute("products"),
-                  href: "products",
-                },
-                {
-                  title: "Profile",
-                  icon: UserIcon,
-                  variant: isRoute(`user/${MobxStore.user?.uid}`),
-                  href: `user/${MobxStore.user?.uid}`,
-                },
-              ]}
-            />
-          </ResizablePanel>
-          {/* <ResizableHandle /> */}
-          <ResizablePanel
-            className="border-l border-gray-[#e5e7eb]"
-            defaultSize={defaultLayout[1]}
-            minSize={30}
-            style={{ overflow: "auto" }}
-          >
-            <div>
-              <div className="w-full h-[53px] flex justify-end items-center p-2 border-b  gap-4">
-                {/* <Input
-                  // type="search"
-                  placeholder="Search..."
-                  className="md:w-[100px] lg:w-[300px]"
-                  icon={<Search size={16} />}
-                /> */}
-
-                <ModeToggle />
-                {user ? (
-                  <>
-                    <div>${user.balance}</div>
-                    <UserNav user={user} logout={logout} />
-                  </>
-                ) : (
-                  <div className="flex gap-2">
-                    <Link href="/login">
-                      <Button variant="outline">Login</Button>
-                    </Link>
-                    <Link href="/signup">
-                      <Button>Create Free Account</Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-              <div className="">{children}</div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-      <div className="block sm:hidden">
-        <MobileHeader />
-        {children}
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="min-h-[calc(100vh-64px-200px)]">{children}</main>
+      <Footer />
     </div>
   );
 });
