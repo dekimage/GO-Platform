@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
 import MobxStore from "@/mobx";
+import Image from "next/image";
 
 const BlogPost = observer(() => {
   const { slug } = useParams();
@@ -85,9 +86,11 @@ const BlogPost = observer(() => {
         {/* Hero Section */}
         <div className="relative h-[35vh] min-h-[350px] w-full">
           <div className="absolute inset-0">
-            <img
+            <Image
               src={post.thumbnail}
               alt={post.title}
+              width={1920}
+              height={1080}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />

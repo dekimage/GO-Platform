@@ -25,11 +25,6 @@ export default function Header() {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
-  // Don't render the header on admin routes
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
       setUser(authUser);
@@ -38,6 +33,11 @@ export default function Header() {
 
     return () => unsubscribe();
   }, []);
+
+  // Don't render the header on admin routes
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSignOut = async () => {
     try {

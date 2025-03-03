@@ -32,7 +32,7 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     fetchSubscriptions();
-  }, []);
+  });
 
   const fetchSubscriptions = async () => {
     try {

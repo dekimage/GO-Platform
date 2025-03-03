@@ -23,6 +23,7 @@ import Link from "next/link";
 
 import MobxStore from "@/mobx";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
+import Image from "next/image";
 
 const BlogPage = observer(() => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -108,9 +109,11 @@ const BlogCard = ({ post }) => {
   return (
     <Card className="overflow-hidden">
       <div className="relative h-48 overflow-hidden">
-        <img
+        <Image
           src={post.thumbnail}
           alt={post.title}
+          width={500}
+          height={500}
           className="object-cover w-full h-full transition-transform hover:scale-105"
         />
       </div>

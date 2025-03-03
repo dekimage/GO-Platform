@@ -14,11 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { db, auth, storage } from "@/firebase";
+import { db, auth } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateProfile } from "firebase/auth";
 import SubscriptionStatus from "./SubscriptionStatus";
 
@@ -66,55 +65,55 @@ export default function ProfileInfo({ user }) {
     }
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid File",
-        description: "Please upload a valid image file (JPEG, PNG, or GIF).",
-        variant: "destructive",
-      });
-      return;
-    }
+  //   const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+  //   if (!allowedTypes.includes(file.type)) {
+  //     toast({
+  //       title: "Invalid File",
+  //       description: "Please upload a valid image file (JPEG, PNG, or GIF).",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
 
-    setIsUploading(true);
-    try {
-      const storageRef = ref(storage, `profile-images/${user.id}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
+  //   setIsUploading(true);
+  //   try {
+  //     const storageRef = ref(storage, `profile-images/${user.id}`);
+  //     await uploadBytes(storageRef, file);
+  //     const downloadURL = await getDownloadURL(storageRef);
 
-      const userRef = doc(db, "users", user.id);
-      await updateDoc(userRef, {
-        profileImage: downloadURL,
-      });
+  //     const userRef = doc(db, "users", user.id);
+  //     await updateDoc(userRef, {
+  //       profileImage: downloadURL,
+  //     });
 
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          photoURL: downloadURL,
-        });
-      }
+  //     if (auth.currentUser) {
+  //       await updateProfile(auth.currentUser, {
+  //         photoURL: downloadURL,
+  //       });
+  //     }
 
-      toast({
-        title: "Image Uploaded",
-        description: "Your profile image has been updated successfully.",
-      });
+  //     toast({
+  //       title: "Image Uploaded",
+  //       description: "Your profile image has been updated successfully.",
+  //     });
 
-      // Force a page refresh to show the new image
-      window.location.reload();
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //     // Force a page refresh to show the new image
+  //     window.location.reload();
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     toast({
+  //       title: "Upload Failed",
+  //       description: "Failed to upload image. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -155,7 +154,7 @@ export default function ProfileInfo({ user }) {
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleImageUpload}
+                // onChange={handleImageUpload}
                 disabled={isUploading}
               />
             </div>
