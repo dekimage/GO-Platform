@@ -9,6 +9,7 @@ const nextConfig = {
       "images.unsplash.com",
       "firebasestorage.googleapis.com",
       "m.media-amazon.com",
+      "galacticomnivorecom.wordpress.com",
     ],
   },
 };
