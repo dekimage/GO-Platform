@@ -12,8 +12,6 @@ export default function Downloads({ userId, unlockedPackages = [] }) {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        // In a real app, this would be an API call to fetch packages
-        // For now, we'll use dummy data
         const response = await fetch("/api/packages");
         const data = await response.json();
         setPackages(data.packages);

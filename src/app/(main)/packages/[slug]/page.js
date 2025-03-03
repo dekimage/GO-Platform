@@ -2,13 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { Download, Music, Image, Code, Video, ArrowLeft } from "lucide-react";
-import Image from "next/image";
+import {
+  Download,
+  Music,
+  Image as ImageIcon,
+  Code,
+  Video,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/firebase";
 
@@ -113,7 +120,7 @@ export default function PackageDetailPage({ params }) {
       case "music":
         return <Music className="h-5 w-5" />;
       case "art":
-        return <Image className="h-5 w-5" />;
+        return <ImageIcon className="h-5 w-5" />;
       case "code":
         return <Code className="h-5 w-5" />;
       case "video":
@@ -203,8 +210,121 @@ export default function PackageDetailPage({ params }) {
 
         <div>
           <Card className="sticky top-6">
-            <CardContent className="p-6"></CardContent>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-bold mb-4">About This Package</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Theme
+                  </p>
+                  <p>{packageData.theme}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Release Date
+                  </p>
+                  <p>
+                    {packageData.month} {packageData.year}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Contents
+                  </p>
+                  <ul className="space-y-1 mt-1">
+                    {packageData.assets.map((asset, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        {getAssetIcon(asset.type)}
+                        <span>{asset.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Separator />
+
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    This package is part of your active subscription.
+                  </p>
+
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/profile">View All Packages</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
           </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PackageDetailSkeleton() {
+  return (
+    <div className="container py-10">
+      <div className="h-10 w-32 mb-6">
+        <Skeleton className="h-full w-full" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Skeleton className="h-[300px] w-full mb-6" />
+
+          <Skeleton className="h-10 w-3/4 mb-2" />
+
+          <div className="flex gap-2 mb-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+
+          <Skeleton className="h-20 w-full mb-6" />
+
+          <Skeleton className="h-1 w-full my-6" />
+
+          <Skeleton className="h-8 w-48 mb-4" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="border rounded-lg overflow-hidden">
+                <Skeleton className="h-40 w-full" />
+                <div className="p-4 space-y-3">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="border rounded-lg">
+            <div className="p-6 space-y-4">
+              <Skeleton className="h-6 w-48 mb-4" />
+
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              ))}
+
+              <Skeleton className="h-1 w-full" />
+
+              <div className="pt-2 space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
