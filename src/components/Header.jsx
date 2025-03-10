@@ -62,13 +62,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1 ml-6">
             <Button asChild variant={isActive("/")} size="sm">
-              <Link href="/">Home</Link>
+              <Link href="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant={isActive("/products")} size="sm">
-              <Link href="/products">Products</Link>
+            <Button asChild variant={isActive("/packages")} size="sm">
+              <Link href="/packages">Packages</Link>
             </Button>
-            <Button asChild variant={isActive("/pricing")} size="sm">
-              <Link href="/pricing">Pricing</Link>
+            <Button asChild variant={isActive("/membership")} size="sm">
+              <Link href="/membership">Membership</Link>
             </Button>
             <Button asChild variant={isActive("/blog")} size="sm">
               <Link href="/blog">Blog</Link>
@@ -148,21 +148,21 @@ export default function Header() {
         <div className="md:hidden border-t">
           <nav className="flex flex-col p-4 space-y-2">
             <Button asChild variant={isActive("/")} className="justify-start">
-              <Link href="/">Home</Link>
+              <Link href="/dashboard">Dashboard</Link>
             </Button>
             <Button
               asChild
-              variant={isActive("/products")}
+              variant={isActive("/packages")}
               className="justify-start"
             >
-              <Link href="/products">Products</Link>
+              <Link href="/packages">Packages</Link>
             </Button>
             <Button
               asChild
-              variant={isActive("/pricing")}
+              variant={isActive("/membership")}
               className="justify-start"
             >
-              <Link href="/pricing">Pricing</Link>
+              <Link href="/membership">Membership</Link>
             </Button>
             <Button
               asChild

@@ -105,20 +105,13 @@ export default function Footer() {
                   Blog
                 </Link>
               </li>
+
               <li>
                 <Link
-                  href="/documentation"
+                  href="/packages"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/tutorials"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Tutorials
+                  Packages
                 </Link>
               </li>
               <li>
@@ -145,10 +138,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/pricing"
+                  href="/membership"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Pricing
+                  Membership
                 </Link>
               </li>
               <li>
@@ -157,14 +150,6 @@ export default function Footer() {
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/careers"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Careers
                 </Link>
               </li>
             </ul>

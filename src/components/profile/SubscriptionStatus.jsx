@@ -79,13 +79,13 @@ export default function SubscriptionStatus({ user }) {
       <div className="flex flex-col sm:flex-row gap-2 mt-2">
         {!isActive && (
           <Button asChild>
-            <Link href="/pricing">Subscribe Now</Link>
+            <Link href="/membership">Subscribe Now</Link>
           </Button>
         )}
 
         {isActive && (
           <Button variant="outline" asChild>
-            <Link href="/pricing">Manage Subscription</Link>
+            <Link href="/membership">Manage Subscription</Link>
           </Button>
         )}
       </div>

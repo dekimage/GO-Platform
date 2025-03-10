@@ -55,10 +55,10 @@ const MobileHeader = observer(() => {
                 href: "",
               },
               {
-                title: "Products",
+                title: "Packages",
                 icon: PackageSearch,
-                variant: isRoute("products"),
-                href: "products",
+                variant: isRoute("packages"),
+                href: "packages",
               },
               {
                 title: "Profile",

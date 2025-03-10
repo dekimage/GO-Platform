@@ -117,7 +117,7 @@ export default function PackageDetailPage({ params }) {
             <h2 className="text-xl font-bold">{error}</h2>
           </div>
           <Button asChild>
-            <Link href="/pricing">View Subscription Options</Link>
+            <Link href="/membership">View Subscription Options</Link>
           </Button>
         </Card>
       </div>
