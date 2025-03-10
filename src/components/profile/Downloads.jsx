@@ -14,9 +14,10 @@ export default function Downloads({ userId, unlockedPackages = [] }) {
       try {
         const response = await fetch("/api/packages");
         const data = await response.json();
-        setPackages(data.packages);
+        setPackages(data || []);
       } catch (error) {
         console.error("Error fetching packages:", error);
+        setPackages([]);
       } finally {
         setLoading(false);
       }
@@ -45,25 +46,29 @@ export default function Downloads({ userId, unlockedPackages = [] }) {
     );
   }
 
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Monthly Packages</h2>
-
-      {packages.length === 0 ? (
+  if (!packages || packages.length === 0) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Monthly Packages</h2>
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">No packages available yet.</p>
         </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <PackageCard
-              key={pkg.id}
-              package={pkg}
-              isUnlocked={unlockedPackages.includes(pkg.id)}
-            />
-          ))}
-        </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Monthly Packages</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {packages.map((pkg) => (
+          <PackageCard
+            key={pkg.id}
+            package={pkg}
+            isUnlocked={unlockedPackages.includes(pkg.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

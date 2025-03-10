@@ -29,39 +29,52 @@ export default function PackageDetailPage({ params }) {
   useEffect(() => {
     const fetchPackageData = async () => {
       try {
-        const user = auth.currentUser;
-        if (!user) {
-          router.push("/login");
-          return;
-        }
+        // Wait for auth to be ready
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+          if (!user) {
+            router.push("/login");
+            return;
+          }
 
-        const idToken = await user.getIdToken();
-        const response = await fetch(`/api/packages/${slug}`, {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
+          try {
+            const idToken = await user.getIdToken();
+            const response = await fetch(`/api/packages/${slug}`, {
+              headers: {
+                Authorization: `Bearer ${idToken}`,
+              },
+            });
+
+            if (!response.ok) {
+              if (response.status === 403) {
+                setError(
+                  "You don't have access to this package. Please subscribe to unlock it."
+                );
+              } else {
+                setError(
+                  "Failed to load package data. Please try again later."
+                );
+              }
+              setLoading(false);
+              return;
+            }
+
+            const data = await response.json();
+            setPackageData(data);
+          } catch (err) {
+            console.error("Error fetching package:", err);
+            setError(
+              "An error occurred while loading the package. Please try again."
+            );
+          } finally {
+            setLoading(false);
+          }
         });
 
-        if (!response.ok) {
-          if (response.status === 403) {
-            setError(
-              "You don't have access to this package. Please subscribe to unlock it."
-            );
-          } else {
-            setError("Failed to load package data. Please try again later.");
-          }
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-        setPackageData(data.package);
+        // Cleanup subscription
+        return () => unsubscribe();
       } catch (err) {
-        console.error("Error fetching package:", err);
-        setError(
-          "An error occurred while loading the package. Please try again."
-        );
-      } finally {
+        console.error("Auth error:", err);
+        setError("Authentication error");
         setLoading(false);
       }
     };

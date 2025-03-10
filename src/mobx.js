@@ -56,6 +56,14 @@ class Store {
   isMobileOpen = false;
   loading = true;
 
+  permissions = null;
+  permissionsLoading = false;
+  permissionsError = null;
+  lastPermissionCheck = null;
+  permissionCheckInProgress = null;
+
+  isReady = false;
+
   constructor() {
     makeAutoObservable(this);
 
@@ -68,40 +76,145 @@ class Store {
     this.signupWithEmail = this.signupWithEmail.bind(this);
 
     this.updateUser = this.updateUser.bind(this);
+
+    // Add permission check to auth state change
+    this.initializeAuth = this.initializeAuth.bind(this);
+    this.checkPermissions = this.checkPermissions.bind(this);
   }
 
   initializeAuth() {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
+      console.log("Auth state changed:", { hasUser: !!user });
 
-        runInAction(() => {
-          if (!userDoc.exists()) {
-            const newUser = {
-              ...DEFAULT_USER,
-              uid: user.uid,
-              provider: "anonymous",
-              username: "Guest",
-              createdAt: new Date(),
-            };
-            setDoc(userDocRef, newUser).then(() => {
-              this.user = newUser;
-            });
-          } else {
-            this.user = { uid: user.uid, ...userDoc.data() };
-          }
-        });
+      if (user) {
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          runInAction(() => {
+            if (!userDoc.exists()) {
+              const newUser = {
+                ...DEFAULT_USER,
+                uid: user.uid,
+                provider: "anonymous",
+                username: "Guest",
+                createdAt: new Date(),
+              };
+              setDoc(userDocRef, newUser).then(() => {
+                this.user = newUser;
+                this.checkPermissions(true);
+              });
+            } else {
+              this.user = { uid: user.uid, ...userDoc.data() };
+              this.checkPermissions(true);
+            }
+          });
+        } catch (error) {
+          console.error("Error in initializeAuth:", error);
+        }
       } else {
         runInAction(() => {
           this.user = null;
+          this.permissions = null;
+          this.lastPermissionCheck = null;
         });
       }
+
       runInAction(() => {
         this.loading = false;
+        this.isReady = true;
       });
     });
+  }
+
+  async checkPermissions(force = false) {
+    console.log("MobX - checkPermissions called:", {
+      hasUser: !!this.user,
+      force,
+      existingPermissions: !!this.permissions,
+    });
+
+    if (!this.user) {
+      console.log("MobX - No user, skipping permission check");
+      return;
+    }
+
+    if (this.permissionCheckInProgress) {
+      console.log("MobX - Permission check already in progress");
+      return this.permissionCheckInProgress;
+    }
+
+    if (
+      !force &&
+      this.permissions &&
+      this.lastPermissionCheck &&
+      Date.now() - this.lastPermissionCheck < 5 * 60 * 1000
+    ) {
+      console.log("MobX - Using cached permissions");
+      return this.permissions;
+    }
+
+    try {
+      console.log("MobX - Starting permission check");
+      this.permissionCheckInProgress = (async () => {
+        runInAction(() => {
+          this.permissionsLoading = true;
+        });
+
+        const idToken = await auth.currentUser.getIdToken();
+        const response = await fetch("/api/auth/verify", {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to verify permissions");
+
+        const data = await response.json();
+        console.log("MobX - Permission check result:", data);
+
+        runInAction(() => {
+          this.permissions = data;
+          this.permissionsLoading = false;
+          this.lastPermissionCheck = Date.now();
+        });
+
+        return data;
+      })();
+
+      const result = await this.permissionCheckInProgress;
+      this.permissionCheckInProgress = null;
+      return result;
+    } catch (error) {
+      console.error("MobX - Permission check error:", error);
+      runInAction(() => {
+        this.permissionsLoading = false;
+        this.permissions = null;
+        this.permissionCheckInProgress = null;
+      });
+    }
+  }
+
+  // Add computed properties for easy permission checks
+  get isAdmin() {
+    return this.permissions?.permissions?.isAdmin ?? false;
+  }
+
+  get isMember() {
+    return this.permissions?.permissions?.isMember ?? false;
+  }
+
+  get canAccessPackages() {
+    return this.permissions?.permissions?.canAccessPackages ?? false;
+  }
+
+  get unlockedPackages() {
+    return this.permissions?.permissions?.unlockedPackages ?? [];
+  }
+
+  get userStatus() {
+    return this.permissions?.status ?? "anonymous";
   }
 
   // GLOBAL MOBX STATE

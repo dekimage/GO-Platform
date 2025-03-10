@@ -1,59 +1,41 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { auth as adminAuth } from "firebase-admin";
-import { getFirebaseAdminApp } from "@/lib/firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 export async function GET(request) {
   try {
-    // Get the authorization header
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return Response.json({ error: "No token provided" }, { status: 401 });
     }
 
-    // Extract the token
     const token = authHeader.split("Bearer ")[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    // Initialize Firebase Admin
-    getFirebaseAdminApp();
-    const db = getFirestore();
+    const userDoc = await adminDb.collection("users").doc(uid).get();
+    const userData = userDoc.data();
 
-    // Verify the token
-    const decodedToken = await adminAuth().verifyIdToken(token);
-    const userId = decodedToken.uid;
-
-    // Get the user
-    const userDoc = await db.collection("users").doc(userId).get();
-
-    if (!userDoc.exists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!userData || !userData.unlockedPackages) {
+      return Response.json([]);
     }
 
-    const userData = userDoc.data();
-    const unlockedPackages = userData.unlockedPackages || [];
-
-    // Get all packages that the user has unlocked
-    const packagesSnapshot = await db
-      .collection("packages")
-      .where(
-        "id",
-        "in",
-        unlockedPackages.length > 0 ? unlockedPackages : ["dummy-id"]
-      )
+    const packagesRef = adminDb.collection("packages");
+    const snapshot = await packagesRef
+      .where("id", "in", userData.unlockedPackages)
       .get();
 
-    const packages = packagesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const packages = [];
+    snapshot.forEach((doc) => {
+      packages.push({ id: doc.id, ...doc.data() });
+    });
 
-    return NextResponse.json({ packages, unlockedPackages });
+    return Response.json(packages);
   } catch (error) {
     console.error("Error fetching user packages:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user packages" },
+    return Response.json(
+      { error: "Failed to fetch packages" },
       { status: 500 }
     );
   }

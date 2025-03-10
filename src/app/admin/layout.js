@@ -1,56 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/firebase";
-import { getDoc, doc } from "firebase/firestore";
-import { db } from "@/firebase";
+import MobxStore from "@/mobx";
+import { observer } from "mobx-react";
 import { Sidebar } from "@/components/admin/Sidebar";
+import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
 
-export default function AdminLayout({ children }) {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+const AdminLayout = observer(({ children }) => {
   const router = useRouter();
+  const { user, permissions, loading, permissionsLoading } = MobxStore;
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      const unsubscribe = auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().admin === true) {
-              setIsAdmin(true);
-            } else {
-              router.push("/");
-            }
-          } catch (error) {
-            console.error("Error checking admin status:", error);
-            router.push("/");
-          }
-        } else {
-          router.push("/");
-        }
-        setLoading(false);
-      });
+    if (!loading && !permissionsLoading) {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
-      return () => unsubscribe();
-    };
+      if (!permissions?.permissions?.isAdmin) {
+        router.push("/login");
+        return;
+      }
+    }
+  }, [user, permissions, loading, permissionsLoading, router]);
 
-    checkAdminStatus();
-  }, [router]);
-
-  if (loading) {
+  if (loading || permissionsLoading || !permissions) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  if (!isAdmin) return null;
+  if (!permissions?.permissions?.isAdmin) {
+    return null;
+  }
 
-  // This is a completely separate layout for admin pages
-  // It should not include any of the regular site navigation
   return (
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
@@ -59,4 +45,6 @@ export default function AdminLayout({ children }) {
       </div>
     </div>
   );
-}
+});
+
+export default AdminLayout;

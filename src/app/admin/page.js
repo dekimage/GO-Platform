@@ -1,18 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { observer } from "mobx-react";
+import DashboardPage from "./dashboard/page";
 
-export default function AdminPage() {
-  const router = useRouter();
+const AdminPage = observer(() => {
+  return <DashboardPage />;
+});
 
-  useEffect(() => {
-    router.push("/admin/dashboard");
-  }, [router]);
-
-  return (
-    <div className="flex items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>
-  );
-}
+export default AdminPage;
