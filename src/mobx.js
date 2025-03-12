@@ -210,7 +210,14 @@ class Store {
   }
 
   get unlockedPackages() {
-    return this.permissions?.permissions?.unlockedPackages ?? [];
+    // First try to get from permissions if available
+    const fromPermissions = this.permissions?.unlockedPackages;
+    if (Array.isArray(fromPermissions) && fromPermissions.length > 0) {
+      return fromPermissions;
+    }
+
+    // Fall back to user object if permissions don't have it
+    return this.user?.unlockedPackages ?? [];
   }
 
   get userStatus() {

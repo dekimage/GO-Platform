@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { auth, db } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import ProfileInfo from "@/components/profile/ProfileInfo";
 import Downloads from "@/components/profile/Downloads";
@@ -17,10 +15,9 @@ import MobxStore from "@/mobx";
 const ProfilePage = observer(() => {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("profile");
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Read the tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam && ["profile", "downloads", "settings"].includes(tabParam)) {
@@ -28,43 +25,19 @@ const ProfilePage = observer(() => {
     }
   }, [searchParams]);
 
+  // Force a fresh permission check when the component mounts
   useEffect(() => {
-    // Force a fresh permission check
     MobxStore.checkPermissions(true);
+  }, []);
 
-    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
-      if (authUser) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", authUser.uid));
-          if (userDoc.exists()) {
-            setUser({
-              id: authUser.uid,
-              email: authUser.email,
-              ...userDoc.data(),
-            });
-          } else {
-            // Create a user document if it doesn't exist
-            setUser({
-              id: authUser.uid,
-              email: authUser.email,
-              name: authUser.displayName || "",
-              profileImage: authUser.photoURL || "",
-              unlockedPackages: [],
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      } else {
-        router.push("/login");
-      }
-      setLoading(false);
-    });
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (MobxStore.isReady && !MobxStore.user) {
+      router.push("/login");
+    }
+  }, [MobxStore.isReady, MobxStore.user, router]);
 
-    return () => unsubscribe();
-  }, [router]);
-
-  // Log detailed permissions data for debugging
+  // Log permissions data for debugging
   useEffect(() => {
     console.log("Profile page - Permissions data:", {
       permissions: MobxStore.permissions,
@@ -76,15 +49,17 @@ const ProfilePage = observer(() => {
     });
   }, [MobxStore.permissions]);
 
-  if (loading) {
+  // Show loading state while MobX is initializing or user data is loading
+  if (!MobxStore.isReady || MobxStore.loading) {
     return <ProfileSkeleton />;
   }
 
-  if (!user) {
+  // If MobX is ready but no user, we'll redirect (handled in useEffect)
+  if (!MobxStore.user) {
     return null;
   }
 
-  console.log("User data:", user);
+  console.log("MobX user data:", MobxStore.user);
   console.log("MobX permissions:", MobxStore.permissions);
 
   return (
@@ -104,7 +79,7 @@ const ProfilePage = observer(() => {
 
         <TabsContent value="profile">
           <ProfileInfo
-            user={user}
+            user={MobxStore.user}
             permissions={MobxStore.permissions}
             isMember={MobxStore.isMember}
             hasActiveSubscription={MobxStore.permissions?.subscription?.active}
@@ -113,13 +88,13 @@ const ProfilePage = observer(() => {
 
         <TabsContent value="downloads">
           <Downloads
-            userId={user.id}
-            unlockedPackages={user.unlockedPackages || []}
+            userId={MobxStore.user.uid}
+            unlockedPackages={MobxStore.user.unlockedPackages || []}
           />
         </TabsContent>
 
         <TabsContent value="settings">
-          <Settings user={user} />
+          <Settings user={MobxStore.user} />
         </TabsContent>
       </Tabs>
     </div>

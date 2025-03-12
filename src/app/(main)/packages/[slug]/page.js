@@ -297,7 +297,9 @@ export default function PackageDetailPage({ params }) {
                         This package is part of your collection.
                       </p>
                       <Button asChild variant="outline" className="w-full">
-                        <Link href="/profile">View All Packages</Link>
+                        <Link href="/profile?tab=downloads">
+                          View All Packages
+                        </Link>
                       </Button>
                     </>
                   ) : isCurrentMonth ? (

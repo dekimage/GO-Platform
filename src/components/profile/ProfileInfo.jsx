@@ -208,13 +208,6 @@ export default function ProfileInfo({
                 : "Subscribe Now"}
             </Link>
           </Button>
-
-          {/* Debug information - remove in production */}
-          <div className="text-xs text-muted-foreground mt-4 p-2 bg-muted rounded">
-            Debug: isMember: {String(isMember)}, hasActiveSubscription:{" "}
-            {String(hasActiveSubscription)}, Raw subscription:{" "}
-            {JSON.stringify(permissions?.subscription)}
-          </div>
         </CardContent>
       </Card>
     </div>
