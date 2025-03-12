@@ -20,46 +20,44 @@ import { doc, updateDoc } from "firebase/firestore";
 // import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateProfile } from "firebase/auth";
 import SubscriptionStatus from "./SubscriptionStatus";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
-export default function ProfileInfo({ user }) {
+export default function ProfileInfo({
+  user,
+  permissions,
+  isMember,
+  hasActiveSubscription,
+}) {
   const [name, setName] = useState(user.name || "");
+  const [username, setUsername] = useState(user.username || "");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // For debugging
+  console.log("ProfileInfo component - subscription data:", {
+    permissions,
+    isMember,
+    hasActiveSubscription,
+    subscriptionFromPermissions: permissions?.subscription,
+  });
+
   const handleUpdateProfile = async () => {
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Name cannot be empty",
-        variant: "destructive",
-      });
+    if (!name.trim() || !username.trim()) {
+      toast.error("Name and username cannot be empty");
       return;
     }
 
     setIsUpdating(true);
     try {
-      const userRef = doc(db, "users", user.id);
-      await updateDoc(userRef, {
-        name: name,
+      await updateDoc(doc(db, "users", user.id), {
+        name,
+        username,
       });
-
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: name,
-        });
-      }
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully.",
-      });
+      toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Update Failed",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update profile");
     } finally {
       setIsUpdating(false);
     }
@@ -125,53 +123,38 @@ export default function ProfileInfo({ user }) {
       .substring(0, 2);
   };
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>
-          Manage your personal information and subscription status.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-          <div className="relative group">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={user.profileImage} alt={user.name || "User"} />
-              <AvatarFallback className="text-lg">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-              <label
-                htmlFor="profile-image"
-                className="cursor-pointer text-white text-xs font-medium p-2 text-center"
-              >
-                {isUploading ? "Uploading..." : "Change Image"}
-              </label>
-              <input
-                id="profile-image"
-                type="file"
-                className="hidden"
-                accept="image/*"
-                // onChange={handleImageUpload}
-                disabled={isUploading}
-              />
-            </div>
-          </div>
+  // Determine subscription status
+  const subscriptionStatus =
+    hasActiveSubscription === true || isMember === true ? "Active" : "Inactive";
 
-          <div className="space-y-2 flex-1">
-            <div className="space-y-1">
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+
+          <div className="space-y-4">
+            <div className="grid gap-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder="Your full name"
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Your username"
+              />
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -180,21 +163,60 @@ export default function ProfileInfo({ user }) {
                 className="bg-muted"
               />
             </div>
+
+            {/* Update button moved up here */}
+            <Button
+              onClick={handleUpdateProfile}
+              disabled={isUpdating}
+              className="w-full md:w-auto"
+            >
+              {isUpdating ? "Updating..." : "Update Profile"}
+            </Button>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <Separator />
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Subscription Status</h2>
 
-        <SubscriptionStatus user={user} />
-      </CardContent>
-      <CardFooter>
-        <Button
-          onClick={handleUpdateProfile}
-          disabled={isUpdating || name === user.name}
-        >
-          {isUpdating ? "Updating..." : "Update Profile"}
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-medium">Status:</span>
+            <Badge
+              variant={
+                subscriptionStatus === "Active" ? "success" : "destructive"
+              }
+            >
+              {subscriptionStatus}
+            </Badge>
+          </div>
+
+          <p className="text-muted-foreground mb-4">
+            {subscriptionStatus === "Active"
+              ? "You have an active subscription with access to all current assets."
+              : "You don't have an active subscription. Subscribe to access premium assets."}
+          </p>
+
+          <Button
+            variant={subscriptionStatus === "Active" ? "outline" : "default"}
+            className="w-full"
+            asChild
+          >
+            <Link href="/membership">
+              {subscriptionStatus === "Active"
+                ? "Manage Subscription"
+                : "Subscribe Now"}
+            </Link>
+          </Button>
+
+          {/* Debug information - remove in production */}
+          <div className="text-xs text-muted-foreground mt-4 p-2 bg-muted rounded">
+            Debug: isMember: {String(isMember)}, hasActiveSubscription:{" "}
+            {String(hasActiveSubscription)}, Raw subscription:{" "}
+            {JSON.stringify(permissions?.subscription)}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

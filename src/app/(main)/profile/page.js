@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,13 +11,27 @@ import { useRouter } from "next/navigation";
 import ProfileInfo from "@/components/profile/ProfileInfo";
 import Downloads from "@/components/profile/Downloads";
 import Settings from "@/components/profile/Settings";
+import { observer } from "mobx-react-lite";
+import MobxStore from "@/mobx";
 
-export default function ProfilePage() {
+const ProfilePage = observer(() => {
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState("profile");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["profile", "downloads", "settings"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Force a fresh permission check
+    MobxStore.checkPermissions(true);
+
     const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
       if (authUser) {
         try {
@@ -49,6 +64,18 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, [router]);
 
+  // Log detailed permissions data for debugging
+  useEffect(() => {
+    console.log("Profile page - Permissions data:", {
+      permissions: MobxStore.permissions,
+      isAdmin: MobxStore.isAdmin,
+      isMember: MobxStore.isMember,
+      canAccessPackages: MobxStore.canAccessPackages,
+      subscription: MobxStore.permissions?.subscription,
+      subscriptionActive: MobxStore.permissions?.subscription?.active,
+    });
+  }, [MobxStore.permissions]);
+
   if (loading) {
     return <ProfileSkeleton />;
   }
@@ -57,37 +84,49 @@ export default function ProfilePage() {
     return null;
   }
 
-  console.log(user);
+  console.log("User data:", user);
+  console.log("MobX permissions:", MobxStore.permissions);
 
   return (
     <div className="container py-10">
-      <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
+      <h1 className="text-3xl font-bold mb-8">Your Profile</h1>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full md:w-[400px] grid-cols-3">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="downloads">Downloads</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-6">
-          <ProfileInfo user={user} />
+        <TabsContent value="profile">
+          <ProfileInfo
+            user={user}
+            permissions={MobxStore.permissions}
+            isMember={MobxStore.isMember}
+            hasActiveSubscription={MobxStore.permissions?.subscription?.active}
+          />
         </TabsContent>
 
-        <TabsContent value="downloads" className="mt-6">
+        <TabsContent value="downloads">
           <Downloads
             userId={user.id}
             unlockedPackages={user.unlockedPackages || []}
           />
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-6">
+        <TabsContent value="settings">
           <Settings user={user} />
         </TabsContent>
       </Tabs>
     </div>
   );
-}
+});
+
+export default ProfilePage;
 
 function ProfileSkeleton() {
   return (
