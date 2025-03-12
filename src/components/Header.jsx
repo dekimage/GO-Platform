@@ -61,7 +61,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1 ml-6">
-            <Button asChild variant={isActive("/")} size="sm">
+            <Button asChild variant={isActive("/dashboard")} size="sm">
               <Link href="/dashboard">Dashboard</Link>
             </Button>
             <Button asChild variant={isActive("/packages")} size="sm">

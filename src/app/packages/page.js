@@ -1,5 +1,6 @@
 import { adminDb } from "@/lib/firebase-admin";
 import PackageList from "@/components/packages/PackageList";
+import FeaturedPackageCard from "@/components/packages/FeaturedPackageCard";
 
 // This enables Static Site Generation
 export const revalidate = 3600; // Revalidate every hour
@@ -34,10 +35,33 @@ async function getPackages() {
 export default async function PackagesPage() {
   const packages = await getPackages();
 
+  // Sort packages by date to find the latest one
+  const sortedPackages = [...packages].sort((a, b) => {
+    const dateA = new Date(`${a.month} 1, ${a.year}`);
+    const dateB = new Date(`${b.month} 1, ${b.year}`);
+    return dateB - dateA;
+  });
+
+  const latestPackage = sortedPackages[0];
+  const pastPackages = sortedPackages.slice(1);
+
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8">Monthly Game Asset Packages</h1>
-      <PackageList packages={packages} />
+
+      {latestPackage && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold mb-4">
+            Featured: Package for this Month!
+          </h2>
+          <FeaturedPackageCard package={latestPackage} />
+        </div>
+      )}
+
+      <div className="mt-12">
+        <h2 className="text-2xl font-semibold mb-4">Past Months Packages</h2>
+        <PackageList packages={pastPackages} />
+      </div>
     </div>
   );
 }
