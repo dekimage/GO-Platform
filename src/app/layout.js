@@ -7,6 +7,7 @@ import ReusableLayout from "@/reusable-ui/ReusableLayout";
 // import CookieConsent from "@/components/cookies/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
+// new font
 
 export default function RootLayout({ children }) {
   return (
