@@ -67,11 +67,20 @@ export default function Header() {
             <Button asChild variant={isActive("/packages")} size="sm">
               <Link href="/packages">Packages</Link>
             </Button>
-            <Button asChild variant={isActive("/membership")} size="sm">
-              <Link href="/membership">Membership</Link>
+            <Button asChild variant={isActive("/games")} size="sm">
+              <Link href="/games">Games</Link>
             </Button>
             <Button asChild variant={isActive("/blog")} size="sm">
               <Link href="/blog">Blog</Link>
+            </Button>
+            <Button asChild variant={isActive("/initiatives")} size="sm">
+              <Link href="/initiatives">Initiatives</Link>
+            </Button>
+            <Button asChild variant={isActive("/pricing")} size="sm">
+              <Link href="/pricing">Pricing</Link>
+            </Button>
+            <Button asChild variant={isActive("/membership")} size="sm">
+              <Link href="/membership">Membership</Link>
             </Button>
           </nav>
         </div>
@@ -147,7 +156,11 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <nav className="flex flex-col p-4 space-y-2">
-            <Button asChild variant={isActive("/")} className="justify-start">
+            <Button
+              asChild
+              variant={isActive("/dashboard")}
+              className="justify-start"
+            >
               <Link href="/dashboard">Dashboard</Link>
             </Button>
             <Button
@@ -159,10 +172,10 @@ export default function Header() {
             </Button>
             <Button
               asChild
-              variant={isActive("/membership")}
+              variant={isActive("/games")}
               className="justify-start"
             >
-              <Link href="/membership">Membership</Link>
+              <Link href="/games">Games</Link>
             </Button>
             <Button
               asChild
@@ -171,6 +184,29 @@ export default function Header() {
             >
               <Link href="/blog">Blog</Link>
             </Button>
+            <Button
+              asChild
+              variant={isActive("/initiatives")}
+              className="justify-start"
+            >
+              <Link href="/initiatives">Initiatives</Link>
+            </Button>
+
+            <Button
+              asChild
+              variant={isActive("/pricing")}
+              className="justify-start"
+            >
+              <Link href="/pricing">Pricing</Link>
+            </Button>
+            <Button
+              asChild
+              variant={isActive("/membership")}
+              className="justify-start"
+            >
+              <Link href="/membership">Membership</Link>
+            </Button>
+
             {user && (
               <Button
                 asChild

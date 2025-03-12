@@ -86,7 +86,7 @@ const PricingTier = ({
 const PricingPage = observer(() => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [redirectPath, setRedirectPath] = useState("/membership");
+  const [redirectPath, setRedirectPath] = useState("/checkout");
 
   // Get redirect path from query params if available
   useEffect(() => {
@@ -94,18 +94,18 @@ const PricingPage = observer(() => {
     if (redirect) {
       setRedirectPath(redirect);
       // Store in localStorage as fallback
-      localStorage.setItem("membershipRedirect", redirect);
+      localStorage.setItem("checkoutRedirect", redirect);
     }
   }, [searchParams]);
 
   const handleSubscribe = (plan) => {
     // Check if user is logged in
     if (MobxStore.user) {
-      // User is logged in, redirect to membership page with plan parameter
-      router.push(`/membership?plan=${plan}`);
+      // User is logged in, redirect to checkout page with plan parameter
+      router.push(`/checkout?plan=${plan}`);
     } else {
       // User is not logged in, redirect to login page with return path
-      router.push(`/login?redirect=/membership&plan=${plan}`);
+      router.push(`/login?redirect=/checkout&plan=${plan}`);
     }
   };
 
