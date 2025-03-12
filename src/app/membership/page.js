@@ -11,52 +11,11 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { observer } from "mobx-react-lite";
 import MobxStore from "@/mobx";
-
-const MembershipPlan = ({ plan = "monthly" }) => {
-  const isAnnual = plan === "annual";
-
-  return (
-    <Card className="w-full max-w-md mx-auto bg-card text-card-foreground">
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold">
-          {isAnnual ? "Annual Member Plan" : "Monthly Member Plan"}
-        </CardTitle>
-        <CardDescription className="text-xl">
-          {isAnnual ? "4,800 Den. /year (save 20%)" : "500 Den. /mo"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-2">
-          {[
-            "Theme of the Month Art packages",
-            "Music packs",
-            "Code packs (bundle assets)",
-            "Instructional tutorial videos (game dev)",
-            "Free game (thematic for the month)",
-            "Community events",
-            "Member only Discord access",
-            "Premium newsletter",
-          ].map((benefit, index) => (
-            <li key={index} className="flex items-center">
-              <Check className="mr-2 h-4 w-4 text-primary" />
-              <span>{benefit}</span>
-            </li>
-          ))}
-        </ul>
-        <Link href="/become-member">
-          <Button className="w-full mt-6">
-            {isAnnual ? "Subscribe Annually" : "Subscribe Monthly"}
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
-};
 
 const DetailSection = ({
   title,
@@ -121,15 +80,88 @@ const YouTubeEmbed = ({ videoId }) => (
   </div>
 );
 
+const GameOfTheMonth = () => (
+  <div className="py-16 border-b">
+    <div className="flex flex-col md:flex-row gap-8 items-center">
+      <div className="w-full md:w-1/2 space-y-6">
+        <div>
+          <h2 className="text-lg font-medium text-primary mb-2">
+            FEATURED THIS MONTH
+          </h2>
+          <h3 className="text-3xl font-bold mb-4">Sakura Spirit</h3>
+          <p className="text-lg text-muted-foreground mb-6">
+            A serene puzzle adventure set in a mystical Japanese garden.
+            Navigate through challenging levels while uncovering the secrets of
+            the ancient cherry blossoms.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="font-semibold">Includes:</h4>
+          <ul className="space-y-2">
+            {[
+              "Complete game with 30+ levels",
+              "Thematic art asset pack",
+              "Original soundtrack",
+              "Source code with documentation",
+              "Level design tutorial videos",
+              "Particle system implementation guide",
+            ].map((item, index) => (
+              <li key={index} className="flex items-start">
+                <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <Button size="lg" asChild className="mt-4">
+          <Link href="/pricing">
+            Become a Member
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </div>
+
+      <div className="w-full md:w-1/2">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+          <Image
+            src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop"
+            alt="Sakura Spirit Game"
+            fill
+            className="object-cover transition-transform duration-500 hover:scale-105"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="absolute bottom-4 left-4 right-4">
+            <Badge className="bg-primary/90 text-white mb-2">
+              Game of the Month
+            </Badge>
+            <p className="text-white text-sm">
+              Available exclusively to members
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const Badge = ({ children, className }) => (
+  <span
+    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}
+  >
+    {children}
+  </span>
+);
+
 const MembershipPage = observer(() => {
   const searchParams = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState("monthly");
 
-  // Check if user is authenticated
   const isAuthenticated = !!MobxStore.user;
 
   useEffect(() => {
-    // Get plan from query params or localStorage
     const planParam = searchParams.get("plan");
     const storedPlan = localStorage.getItem("selectedPlan");
 
@@ -140,7 +172,6 @@ const MembershipPage = observer(() => {
       setSelectedPlan(storedPlan);
     }
 
-    // Clear stored plan after using it
     if (storedPlan) {
       localStorage.removeItem("selectedPlan");
     }
@@ -157,20 +188,7 @@ const MembershipPage = observer(() => {
       </Head>
 
       <main className="container mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold text-center mb-16">
-          Exclusive Membership
-        </h1>
-
-        <MembershipPlan plan={selectedPlan} />
-
-        <div className="text-center mt-8 mb-16">
-          <p className="text-muted-foreground mb-4">
-            Want to see other pricing options?
-          </p>
-          <Button variant="outline" asChild>
-            <Link href="/pricing">View All Plans</Link>
-          </Button>
-        </div>
+        <GameOfTheMonth />
 
         <DetailSection
           title="Theme of the Month Art Packages"
