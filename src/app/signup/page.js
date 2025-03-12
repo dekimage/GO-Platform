@@ -69,7 +69,7 @@ export const SignupForm = observer(() => {
         await signupWithEmail(email, password, username);
       }
       setIsLoading(false);
-      router.push("/"); // Redirect after successful operation
+      router.push("/dashboard"); // Redirect after successful operation
     } catch (error) {
       // Handle errors
       setIsLoading(false);
@@ -153,7 +153,7 @@ const SignupCard = observer(() => {
   const { isUserAnonymous, signInWithGoogle } = MobxStore;
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
-    router.push("/");
+    router.push("/dashboard");
   };
   return (
     <Card className="min-w-3xl">

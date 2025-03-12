@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import MobxStore from "@/mobx";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -181,6 +183,16 @@ export default function Footer() {
             </Link>
           </div>
         </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            MobxStore.cookieSettingsOpen = true;
+          }}
+        >
+          Manage Cookies
+        </Button>
       </div>
     </footer>
   );
