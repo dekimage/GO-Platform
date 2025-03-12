@@ -3,12 +3,18 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
+  const category = searchParams.get("category");
 
   try {
     let url;
     if (slug) {
       // Fetch a single post by slug
       url = `${process.env.WORDPRESS_API_URL}/posts?_embed&slug=${slug}`;
+    } else if (category) {
+      // Fetch posts by category name
+      url = `${
+        process.env.WORDPRESS_API_URL
+      }/posts?_embed&per_page=20&categories=${await getCategoryId(category)}`;
     } else {
       // Fetch all posts (existing functionality)
       url = `${process.env.WORDPRESS_API_URL}/posts?_embed&per_page=10`;
@@ -35,6 +41,29 @@ export async function GET(request) {
       { error: "Failed to fetch from WordPress" },
       { status: 500 }
     );
+  }
+}
+
+// Helper function to get category ID from category name
+async function getCategoryId(categoryName) {
+  try {
+    const response = await fetch(
+      `${
+        process.env.WORDPRESS_API_URL
+      }/categories?slug=${categoryName.toLowerCase()}`
+    );
+
+    if (!response.ok) throw new Error("Failed to fetch category");
+
+    const categories = await response.json();
+    if (categories.length > 0) {
+      return categories[0].id;
+    }
+
+    return 0; // Return 0 if category not found
+  } catch (error) {
+    console.error("Error fetching category ID:", error);
+    return 0;
   }
 }
 
