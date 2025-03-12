@@ -73,7 +73,6 @@ export default function PackageDetailPage({ params }) {
         const data = await response.json();
         setPackageData(data);
 
-        // Check if this is the current month's package
         const currentDate = new Date();
         const currentMonth = currentDate.toLocaleString("en-US", {
           month: "long",
@@ -230,7 +229,7 @@ export default function PackageDetailPage({ params }) {
       return packageData.isAuthenticated ? (
         <>
           <p className="text-sm text-muted-foreground mb-2">
-            Subscribe to get this month's package and future releases.
+            Subscribe to get this month&apos;s package and future releases.
           </p>
           <Button asChild className="w-full">
             <Link href="/membership">Subscribe Now</Link>
@@ -239,7 +238,7 @@ export default function PackageDetailPage({ params }) {
       ) : (
         <>
           <p className="text-sm text-muted-foreground mb-2">
-            Sign up and subscribe to access this month's package.
+            Sign up and subscribe to access this month&apos;s package.
           </p>
           <div className="space-y-2">
             <Button asChild className="w-full">

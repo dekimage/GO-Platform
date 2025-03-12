@@ -5,8 +5,8 @@ export default function TermsPage() {
     <LegalPageLayout title="Terms of Service" lastUpdated="March 10, 2024">
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing and using Galactic Omnivore's services, you agree to be
-        bound by these Terms of Service. If you do not agree to these terms,
+        By accessing and using Galactic Omnivore&apos;s services, you agree to
+        be bound by these Terms of Service. If you do not agree to these terms,
         please do not use our services.
       </p>
 

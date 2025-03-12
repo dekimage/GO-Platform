@@ -73,13 +73,13 @@ const ResetPasswordForm = observer(() => {
         <CardHeader>
           <CardTitle>Check Your Email</CardTitle>
           <CardDescription>
-            We've sent password reset instructions to your email address.
+            We&apos;ve sent password reset instructions to your email address.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Click the link in the email to reset your password. If you don't see
-            the email, check your spam folder.
+            Click the link in the email to reset your password. If you
+            don&apos;t see the email, check your spam folder.
           </p>
           <Button
             variant="outline"
@@ -106,8 +106,8 @@ const ResetPasswordForm = observer(() => {
       <CardHeader>
         <CardTitle>Reset Password</CardTitle>
         <CardDescription>
-          Enter your email address and we'll send you instructions to reset your
-          password.
+          Enter your email address and we&apos;ll send you instructions to reset
+          your password.
         </CardDescription>
       </CardHeader>
       <CardContent>

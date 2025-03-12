@@ -122,8 +122,8 @@ const CheckoutPage = observer(() => {
 
       <h1 className="text-3xl font-bold mb-2">Complete Your Subscription</h1>
       <p className="text-muted-foreground mb-8">
-        You're just a few steps away from accessing exclusive game development
-        resources.
+        You&apos;re just a few steps away from accessing exclusive game
+        development resources.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -260,14 +260,14 @@ const CheckoutPage = observer(() => {
                   <div>
                     <h3 className="font-medium">3. Send Confirmation Email</h3>
                     <p className="text-muted-foreground mb-2">
-                      Send an email to{" "}
+                      Send an email to
                       <span className="font-medium">
                         galacticomnivore@gmail.com
-                      </span>{" "}
+                      </span>
                       with:
                     </p>
                     <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                      <li>Subject: "Membership Access"</li>
+                      <li>Subject: Membership Access</li>
                       <li>Your full name and email address</li>
                       <li>Selected plan: {selectedPlan.name}</li>
                       <li>Attach the screenshot of your payment</li>
@@ -298,7 +298,7 @@ const CheckoutPage = observer(() => {
                     <h3 className="font-medium">4. Activation</h3>
                     <p className="text-muted-foreground">
                       An administrator will review your payment within 24 hours
-                      and activate your membership. You'll receive a
+                      and activate your membership. You&apos;ll receive a
                       confirmation email once your access is granted.
                     </p>
                   </div>

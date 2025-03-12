@@ -12,10 +12,10 @@ export default function AboutPage() {
           <CardContent className="pt-6">
             <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
             <p className="text-muted-foreground">
-              At Galactic Omnivore, we're dedicated to empowering game
+              At Galactic Omnivore, we&apos;re dedicated to empowering game
               developers with high-quality, themed asset packs that accelerate
               their creative journey. We believe that great games are built on
-              great resources, and we're here to provide them.
+              great resources, and we&apos;re here to provide them.
             </p>
           </CardContent>
         </Card>
