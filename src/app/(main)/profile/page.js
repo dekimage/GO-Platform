@@ -37,18 +37,6 @@ const ProfilePage = observer(() => {
     }
   }, [MobxStore.isReady, MobxStore.user, router]);
 
-  // Log permissions data for debugging
-  useEffect(() => {
-    console.log("Profile page - Permissions data:", {
-      permissions: MobxStore.permissions,
-      isAdmin: MobxStore.isAdmin,
-      isMember: MobxStore.isMember,
-      canAccessPackages: MobxStore.canAccessPackages,
-      subscription: MobxStore.permissions?.subscription,
-      subscriptionActive: MobxStore.permissions?.subscription?.active,
-    });
-  }, [MobxStore.permissions]);
-
   // Show loading state while MobX is initializing or user data is loading
   if (!MobxStore.isReady || MobxStore.loading) {
     return <ProfileSkeleton />;
@@ -58,9 +46,6 @@ const ProfilePage = observer(() => {
   if (!MobxStore.user) {
     return null;
   }
-
-  console.log("MobX user data:", MobxStore.user);
-  console.log("MobX permissions:", MobxStore.permissions);
 
   return (
     <div className="container py-10">

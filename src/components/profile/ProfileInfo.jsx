@@ -31,35 +31,56 @@ export default function ProfileInfo({
 }) {
   const [name, setName] = useState(user.name || "");
   const [username, setUsername] = useState(user.username || "");
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
-  // For debugging
-  console.log("ProfileInfo component - subscription data:", {
-    permissions,
-    isMember,
-    hasActiveSubscription,
-    subscriptionFromPermissions: permissions?.subscription,
-  });
 
   const handleUpdateProfile = async () => {
     if (!name.trim() || !username.trim()) {
-      toast.error("Name and username cannot be empty");
+      toast({
+        title: "Error",
+        description: "Name and username cannot be empty",
+        variant: "destructive",
+      });
       return;
     }
 
-    setIsUpdating(true);
+    setUpdating(true);
     try {
-      await updateDoc(doc(db, "users", user.id), {
-        name,
-        username,
+      const idToken = await auth.currentUser.getIdToken();
+
+      const response = await fetch("/api/user/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          user: {
+            name,
+            username,
+          },
+        }),
       });
-      toast.success("Profile updated successfully");
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update profile");
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
     } finally {
-      setIsUpdating(false);
+      setUpdating(false);
     }
   };
 
@@ -167,10 +188,10 @@ export default function ProfileInfo({
             {/* Update button moved up here */}
             <Button
               onClick={handleUpdateProfile}
-              disabled={isUpdating}
+              disabled={updating}
               className="w-full md:w-auto"
             >
-              {isUpdating ? "Updating..." : "Update Profile"}
+              {updating ? "Updating..." : "Update Profile"}
             </Button>
           </div>
         </CardContent>

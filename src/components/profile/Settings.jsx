@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { db } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { auth } from "@/firebase";
 
 export default function Settings({ user }) {
   const [settings, setSettings] = useState({
@@ -36,10 +35,24 @@ export default function Settings({ user }) {
   const saveSettings = async () => {
     setIsSaving(true);
     try {
-      const userRef = doc(db, "users", user.id);
-      await updateDoc(userRef, {
-        settings: settings,
+      const idToken = await auth.currentUser.getIdToken();
+
+      const response = await fetch("/api/user/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          settings: settings,
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save settings");
+      }
 
       toast({
         title: "Settings Saved",
@@ -49,7 +62,8 @@ export default function Settings({ user }) {
       console.error("Error saving settings:", error);
       toast({
         title: "Error",
-        description: "Failed to save settings. Please try again.",
+        description:
+          error.message || "Failed to save settings. Please try again.",
         variant: "destructive",
       });
     } finally {

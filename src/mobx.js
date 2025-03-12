@@ -85,8 +85,6 @@ class Store {
   initializeAuth() {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", { hasUser: !!user });
-
       if (user) {
         try {
           const userDocRef = doc(db, "users", user.uid);
@@ -129,19 +127,11 @@ class Store {
   }
 
   async checkPermissions(force = false) {
-    console.log("MobX - checkPermissions called:", {
-      hasUser: !!this.user,
-      force,
-      existingPermissions: !!this.permissions,
-    });
-
     if (!this.user) {
-      console.log("MobX - No user, skipping permission check");
       return;
     }
 
     if (this.permissionCheckInProgress) {
-      console.log("MobX - Permission check already in progress");
       return this.permissionCheckInProgress;
     }
 
@@ -151,12 +141,10 @@ class Store {
       this.lastPermissionCheck &&
       Date.now() - this.lastPermissionCheck < 5 * 60 * 1000
     ) {
-      console.log("MobX - Using cached permissions");
       return this.permissions;
     }
 
     try {
-      console.log("MobX - Starting permission check");
       this.permissionCheckInProgress = (async () => {
         runInAction(() => {
           this.permissionsLoading = true;
@@ -172,7 +160,6 @@ class Store {
         if (!response.ok) throw new Error("Failed to verify permissions");
 
         const data = await response.json();
-        console.log("MobX - Permission check result:", data);
 
         runInAction(() => {
           this.permissions = data;
