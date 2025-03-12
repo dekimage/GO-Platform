@@ -1,17 +1,8 @@
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function GET(request, { params }) {
   try {
     const { slug } = params;
-
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split("Bearer ")[1];
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const uid = decodedToken.uid;
 
     // Get the package
     const packageQuery = await adminDb
@@ -27,32 +18,55 @@ export async function GET(request, { params }) {
     const packageDoc = packageQuery.docs[0];
     const packageData = { id: packageDoc.id, ...packageDoc.data() };
 
-    // Get user data
-    const userDoc = await adminDb.collection("users").doc(uid).get();
-    const userData = userDoc.data();
+    // Check if user is authenticated
+    const authHeader = request.headers.get("authorization");
+    let isAuthenticated = false;
+    let hasAccess = false;
+    let uid = null;
 
-    // ONLY check unlockedPackages - no exceptions for anyone!
-    const hasPackage = userData?.unlockedPackages?.includes(packageData.id);
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.split("Bearer ")[1];
+        const { adminAuth } = await import("@/lib/firebase-admin");
+        const decodedToken = await adminAuth.verifyIdToken(token);
+        uid = decodedToken.uid;
+        isAuthenticated = true;
 
-    console.log("Access check:", {
-      uid,
-      packageId: packageData.id,
-      unlockedPackages: userData?.unlockedPackages,
-      hasPackage,
-    });
+        // Get user data
+        const userDoc = await adminDb.collection("users").doc(uid).get();
+        const userData = userDoc.data();
 
-    if (!hasPackage) {
-      return Response.json(
-        {
-          error: "Access denied",
-          message: "You need to purchase this package to access it.",
-          requiresPurchase: true,
-        },
-        { status: 403 }
-      );
+        // Check if user has access to this package
+        hasAccess = userData?.unlockedPackages?.includes(packageData.id);
+
+        console.log("Access check:", {
+          uid,
+          packageId: packageData.id,
+          unlockedPackages: userData?.unlockedPackages,
+          hasAccess,
+        });
+      } catch (error) {
+        console.error("Auth verification error:", error);
+        // Continue as unauthenticated user
+      }
     }
 
-    return Response.json(packageData);
+    // Prepare response based on access level
+    const responseData = {
+      ...packageData,
+      isAuthenticated,
+      hasAccess,
+    };
+
+    // If user doesn't have access, remove download URLs from assets
+    if (!hasAccess) {
+      responseData.assets = packageData.assets.map((asset) => ({
+        ...asset,
+        downloadUrl: undefined, // Remove download URL
+      }));
+    }
+
+    return Response.json(responseData);
   } catch (error) {
     console.error("Error fetching package:", error);
     return Response.json({ error: "Failed to fetch package" }, { status: 500 });
