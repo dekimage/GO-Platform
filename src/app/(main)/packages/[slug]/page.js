@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Lock,
   ShoppingCart,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/firebase";
@@ -24,23 +25,29 @@ import { auth } from "@/firebase";
 export default function PackageDetailPage({ params }) {
   const [packageData, setPackageData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCurrentMonth, setIsCurrentMonth] = useState(false);
   const router = useRouter();
   const { slug } = params;
   const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Listen to auth state
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
+      setAuthChecked(true);
     });
 
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
+    if (!authChecked) return;
+
     const fetchPackageData = async () => {
+      setPermissionsLoading(true);
       try {
         let headers = {};
 
@@ -59,6 +66,7 @@ export default function PackageDetailPage({ params }) {
             setError("Failed to load package data. Please try again later.");
           }
           setLoading(false);
+          setPermissionsLoading(false);
           return;
         }
 
@@ -77,17 +85,19 @@ export default function PackageDetailPage({ params }) {
         );
 
         setLoading(false);
+        setPermissionsLoading(false);
       } catch (err) {
         console.error("Error fetching package:", err);
         setError(
           "An error occurred while loading the package. Please try again."
         );
         setLoading(false);
+        setPermissionsLoading(false);
       }
     };
 
     fetchPackageData();
-  }, [slug, user]);
+  }, [slug, user, authChecked]);
 
   if (loading) {
     return <PackageDetailSkeleton />;
@@ -147,6 +157,125 @@ export default function PackageDetailPage({ params }) {
         return <Video className="h-5 w-5" />;
       default:
         return <Download className="h-5 w-5" />;
+    }
+  };
+
+  const renderAssetButton = (asset) => {
+    if (permissionsLoading) {
+      return (
+        <Button disabled className="w-full">
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Loading...
+        </Button>
+      );
+    }
+
+    if (packageData.hasAccess) {
+      return (
+        <Button asChild className="w-full">
+          <a href={asset.downloadUrl} target="_blank" rel="noopener noreferrer">
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </a>
+        </Button>
+      );
+    } else if (isCurrentMonth) {
+      return (
+        <Button asChild variant="secondary" className="w-full">
+          <Link href="/membership">
+            <Lock className="h-4 w-4 mr-2" />
+            Subscribe to Unlock
+          </Link>
+        </Button>
+      );
+    } else {
+      return (
+        <Button asChild variant="secondary" className="w-full">
+          <Link href="/shop">
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Buy in Shop
+          </Link>
+        </Button>
+      );
+    }
+  };
+
+  const renderSidebarContent = () => {
+    if (permissionsLoading) {
+      return (
+        <div className="pt-2">
+          <p className="text-sm text-muted-foreground mb-2">
+            Checking access status...
+          </p>
+          <Button disabled className="w-full">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Loading...
+          </Button>
+        </div>
+      );
+    }
+
+    if (packageData.hasAccess) {
+      return (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            This package is part of your collection.
+          </p>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/profile?tab=downloads">View All Packages</Link>
+          </Button>
+        </>
+      );
+    } else if (isCurrentMonth) {
+      return packageData.isAuthenticated ? (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            Subscribe to get this month's package and future releases.
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/membership">Subscribe Now</Link>
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            Sign up and subscribe to access this month's package.
+          </p>
+          <div className="space-y-2">
+            <Button asChild className="w-full">
+              <Link href="/membership">View Membership Options</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+        </>
+      );
+    } else {
+      return packageData.isAuthenticated ? (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            This is a past package available for individual purchase.
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/shop">Buy in Shop</Link>
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            This is a past package available for individual purchase.
+          </p>
+          <div className="space-y-2">
+            <Button asChild className="w-full">
+              <Link href="/shop">Buy in Shop</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+        </>
+      );
     }
   };
 
@@ -217,32 +346,7 @@ export default function PackageDetailPage({ params }) {
                     {asset.description}
                   </p>
 
-                  {packageData.hasAccess ? (
-                    <Button asChild className="w-full">
-                      <a
-                        href={asset.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </a>
-                    </Button>
-                  ) : isCurrentMonth ? (
-                    <Button asChild variant="secondary" className="w-full">
-                      <Link href="/membership">
-                        <Lock className="h-4 w-4 mr-2" />
-                        Subscribe to Unlock
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="secondary" className="w-full">
-                      <Link href="/shop">
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Buy in Shop
-                      </Link>
-                    </Button>
-                  )}
+                  {renderAssetButton(asset)}
                 </CardContent>
               </Card>
             ))}
@@ -290,73 +394,7 @@ export default function PackageDetailPage({ params }) {
 
                 <Separator />
 
-                <div className="pt-2">
-                  {packageData.hasAccess ? (
-                    <>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        This package is part of your collection.
-                      </p>
-                      <Button asChild variant="outline" className="w-full">
-                        <Link href="/profile?tab=downloads">
-                          View All Packages
-                        </Link>
-                      </Button>
-                    </>
-                  ) : isCurrentMonth ? (
-                    packageData.isAuthenticated ? (
-                      <>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Subscribe to get this month's package and future
-                          releases.
-                        </p>
-                        <Button asChild className="w-full">
-                          <Link href="/membership">Subscribe Now</Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Sign up and subscribe to access this month's package.
-                        </p>
-                        <div className="space-y-2">
-                          <Button asChild className="w-full">
-                            <Link href="/membership">
-                              View Membership Options
-                            </Link>
-                          </Button>
-                          <Button asChild variant="outline" className="w-full">
-                            <Link href="/login">Sign In</Link>
-                          </Button>
-                        </div>
-                      </>
-                    )
-                  ) : packageData.isAuthenticated ? (
-                    <>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        This is a past package available for individual
-                        purchase.
-                      </p>
-                      <Button asChild className="w-full">
-                        <Link href="/shop">Buy in Shop</Link>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        This is a past package available for individual
-                        purchase.
-                      </p>
-                      <div className="space-y-2">
-                        <Button asChild className="w-full">
-                          <Link href="/shop">Buy in Shop</Link>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full">
-                          <Link href="/login">Sign In</Link>
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <div className="pt-2">{renderSidebarContent()}</div>
               </div>
             </CardContent>
           </Card>

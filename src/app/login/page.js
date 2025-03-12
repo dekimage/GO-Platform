@@ -27,10 +27,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MobxStore from "@/mobx";
 import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
   password: z.string().min(6, {
@@ -43,10 +43,31 @@ const formSchema = z.object({
 
 export const LoginForm = observer(() => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loginWithEmail } = MobxStore;
   const isAuthenticated = !!user;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  // Get redirect path and plan from query params
+  useEffect(() => {
+    const redirect = searchParams.get("redirect");
+    const plan = searchParams.get("plan");
+
+    if (redirect) {
+      if (plan) {
+        setRedirectTo(`${redirect}?plan=${plan}`);
+      } else {
+        setRedirectTo(redirect);
+      }
+
+      // Store in localStorage as fallback
+      localStorage.setItem("authRedirect", redirect);
+      if (plan) localStorage.setItem("selectedPlan", plan);
+    }
+  }, [searchParams]);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,16 +82,25 @@ export const LoginForm = observer(() => {
 
     if (isAuthenticated) {
       setIsLoading(false);
-      router.push("/dashboard");
+      router.push(redirectTo);
       return;
     }
 
-    await loginWithEmail({
-      email,
-      password,
-    });
-    setIsLoading(false);
-    router.push("/dashboard");
+    try {
+      await loginWithEmail({
+        email,
+        password,
+      });
+      setIsLoading(false);
+      router.push(redirectTo);
+    } catch (error) {
+      setIsLoading(false);
+      // Handle login error
+      form.setError("root", {
+        type: "manual",
+        message: "Invalid email or password",
+      });
+    }
   }
 
   return (
@@ -123,6 +153,11 @@ export const LoginForm = observer(() => {
             </FormItem>
           )}
         />
+        {form.formState.errors.root && (
+          <div className="text-destructive text-sm">
+            {form.formState.errors.root.message}
+          </div>
+        )}
         <Button className="w-full" type="submit" disabled={isLoading}>
           {isLoading && <CgSpinner className="mr-2 h-4 w-4 animate-spin" />}
           Login
@@ -134,11 +169,34 @@ export const LoginForm = observer(() => {
 
 const LoginCard = observer(() => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signInWithGoogle } = MobxStore;
+
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  // Get redirect path and plan from query params
+  useEffect(() => {
+    const redirect = searchParams.get("redirect");
+    const plan = searchParams.get("plan");
+
+    if (redirect) {
+      if (plan) {
+        setRedirectTo(`${redirect}?plan=${plan}`);
+      } else {
+        setRedirectTo(redirect);
+      }
+    }
+  }, [searchParams]);
+
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle();
-    router.push("/dashboard");
+    try {
+      await signInWithGoogle();
+      router.push(redirectTo);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
   };
+
   return (
     <Card className="min-w-3xl">
       <CardHeader className="space-y-1">
@@ -169,7 +227,11 @@ const LoginCard = observer(() => {
       <CardFooter>
         <div className="flex flex-col text-center text-sm w-full gap-2">
           Don&apos;t have account?&nbsp;
-          <Link href="/signup">
+          <Link
+            href={`/signup${
+              searchParams.toString() ? `?${searchParams.toString()}` : ""
+            }`}
+          >
             <Button variant="outline" className="w-full">
               Create Account
             </Button>

@@ -27,8 +27,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import MobxStore from "@/mobx";
 import { observer } from "mobx-react";
 
@@ -49,6 +49,27 @@ export const SignupForm = observer(() => {
   const isAuthenticated = !!user;
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  // Get redirect path and plan from query params
+  useEffect(() => {
+    const redirect = searchParams.get("redirect");
+    const plan = searchParams.get("plan");
+
+    if (redirect) {
+      if (plan) {
+        setRedirectTo(`${redirect}?plan=${plan}`);
+      } else {
+        setRedirectTo(redirect);
+      }
+
+      // Store in localStorage as fallback
+      localStorage.setItem("authRedirect", redirect);
+      if (plan) localStorage.setItem("selectedPlan", plan);
+    }
+  }, [searchParams]);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,10 +90,14 @@ export const SignupForm = observer(() => {
         await signupWithEmail(email, password, username);
       }
       setIsLoading(false);
-      router.push("/dashboard"); // Redirect after successful operation
+      router.push(redirectTo); // Redirect after successful operation
     } catch (error) {
       // Handle errors
       setIsLoading(false);
+      form.setError("root", {
+        type: "manual",
+        message: error.message || "Failed to create account",
+      });
     }
   }
 
@@ -139,6 +164,11 @@ export const SignupForm = observer(() => {
             </FormItem>
           )}
         />
+        {form.formState.errors.root && (
+          <div className="text-destructive text-sm">
+            {form.formState.errors.root.message}
+          </div>
+        )}
         <Button className="w-full" type="submit" disabled={isLoading}>
           {isLoading && <CgSpinner className="mr-2 h-4 w-4 animate-spin" />}
           Create Account
@@ -150,11 +180,34 @@ export const SignupForm = observer(() => {
 
 const SignupCard = observer(() => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isUserAnonymous, signInWithGoogle } = MobxStore;
+
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  // Get redirect path and plan from query params
+  useEffect(() => {
+    const redirect = searchParams.get("redirect");
+    const plan = searchParams.get("plan");
+
+    if (redirect) {
+      if (plan) {
+        setRedirectTo(`${redirect}?plan=${plan}`);
+      } else {
+        setRedirectTo(redirect);
+      }
+    }
+  }, [searchParams]);
+
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle();
-    router.push("/dashboard");
+    try {
+      await signInWithGoogle();
+      router.push(redirectTo);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
   };
+
   return (
     <Card className="min-w-3xl">
       <CardHeader className="space-y-1">
@@ -196,7 +249,11 @@ const SignupCard = observer(() => {
         </div>
         <div className="flex flex-col gap-2 text-center mt-4 text-sm">
           Already Have An Account?{" "}
-          <Link href="/login">
+          <Link
+            href={`/login${
+              searchParams.toString() ? `?${searchParams.toString()}` : ""
+            }`}
+          >
             <Button variant="outline" className="w-full">
               Login
             </Button>
