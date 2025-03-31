@@ -141,7 +141,7 @@ const BlogCard = ({ post }) => {
           </div>
         </div>
         <div
-          className="line-clamp-3 text-sm text-muted-foreground"
+          className="line-clamp-3 text-sm text-muted-foreground prose prose-sm"
           dangerouslySetInnerHTML={{ __html: post.excerpt }}
         />
       </CardContent>

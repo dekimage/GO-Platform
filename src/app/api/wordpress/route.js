@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { marked } from "marked";
+import he from "he";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -93,32 +95,56 @@ export async function POST(request) {
   }
 }
 
+function cleanWordPressContent(content) {
+  // First remove unnecessary newlines and spaces from WordPress
+  let cleanContent = content
+    // Remove excessive newlines and spaces
+    .replace(/\n\n+/g, "\n")
+    .trim();
+
+  // Then add proper spacing based on HTML structure
+  cleanContent = cleanContent
+    // Add space after horizontal rules
+    .replace(/<hr[^>]*>/g, '<hr class="wp-block-separator" />\n\n')
+
+    // Handle headings
+    .replace(/<h([1-6])[^>]*>(.*?)<\/h\1>/g, (match, level, content) => {
+      return `\n\n<h${level}>${content}</h${level}>\n\n`;
+    })
+
+    // Handle paragraphs
+    .replace(/<p[^>]*>(.*?)<\/p>/g, "<p>$1</p>\n\n")
+
+    // Handle lists
+    .replace(/<ul[^>]*>/g, "\n<ul>")
+    .replace(/<\/ul>/g, "</ul>\n\n")
+    .replace(/<li[^>]*>(.*?)<\/li>\n/g, "<li>$1</li>")
+
+    // Handle figures/images
+    .replace(/<figure[^>]*>(.*?)<\/figure>/g, "\n\n<figure>$1</figure>\n\n")
+
+    // Clean up multiple spaces
+    .replace(/\s\s+/g, " ")
+
+    // Clean up multiple newlines
+    .replace(/\n\n\n+/g, "\n\n");
+
+  return cleanContent;
+}
+
 function formatBlogPost(post) {
-  let categories = [];
-  if (
-    post._embedded &&
-    post._embedded["wp:term"] &&
-    post._embedded["wp:term"][0]
-  ) {
-    categories = post._embedded["wp:term"][0].map((term) => term.name);
-  }
-  if (categories.length === 0) {
-    categories.push("Uncategorized");
-  }
-
-  console.log("Categories for post", post.id, ":", categories);
-
-  const thumbnail = post.jetpack_featured_media_url || "/default-thumbnail.jpg";
+  const cleanContent = post.content ? cleanWordPressContent(post.content) : "";
+  const cleanTitle = post.title ? post.title.replace(/[""]/g, '"') : "";
 
   return {
     id: post.id,
-    title: post.title.rendered || "Untitled",
+    title: cleanTitle,
     slug: post.slug,
-    content: post.content ? post.content.rendered : "",
-    excerpt: post.excerpt ? post.excerpt.rendered : "",
-    date: post.date ? new Date(post.date).toLocaleDateString() : "No date",
-    categories, // Now it's an array of all categories
-    thumbnail,
+    content: cleanContent,
+    excerpt: post.excerpt,
+    date: post.date,
+    categories: post.categories,
+    thumbnail: post.thumbnail,
   };
 }
 
