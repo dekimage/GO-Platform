@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Search, Clock, User } from "lucide-react";
 import Link from "next/link";
+import he from "he";
 
 import MobxStore from "@/mobx";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
@@ -46,15 +47,20 @@ const BlogPage = observer(() => {
         selectedCategory === "all" ||
         post.categories.some(
           (category) =>
-            category.toLowerCase() === selectedCategory.toLowerCase()
+            String(category).toLowerCase() === selectedCategory.toLowerCase()
         );
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Get unique categories from all posts
+  // Get unique categories and ensure they're strings
   const categories = [
-    ...new Set(MobxStore.blogs.flatMap((post) => post.categories)),
+    ...new Set(
+      MobxStore.blogs
+        .flatMap((post) => post.categories)
+        .filter(Boolean)
+        .map((category) => String(category))
+    ),
   ];
 
   return (
@@ -79,8 +85,11 @@ const BlogPage = observer(() => {
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
-              <SelectItem key={category} value={category.toLowerCase()}>
-                {category}
+              <SelectItem
+                key={String(category)}
+                value={String(category).toLowerCase()}
+              >
+                {String(category)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -104,14 +113,18 @@ const BlogPage = observer(() => {
 const BlogCard = ({ post }) => {
   // Calculate read time (rough estimate)
   const wordCount = post.content.split(" ").length;
-  const readTime = Math.ceil(wordCount / 200); // Assuming 200 words per minute
+  const readTime = Math.ceil(wordCount / 200);
+
+  // Decode the title and excerpt
+  const decodedTitle = he.decode(post.title);
+  const decodedExcerpt = he.decode(post.excerpt);
 
   return (
     <Card className="overflow-hidden">
       <div className="relative h-48 overflow-hidden">
         <Image
           src={post.thumbnail}
-          alt={post.title}
+          alt={decodedTitle}
           width={500}
           height={500}
           className="object-cover w-full h-full transition-transform hover:scale-105"
@@ -128,7 +141,7 @@ const BlogCard = ({ post }) => {
             </span>
           ))}
         </div>
-        <h2 className="text-xl font-semibold line-clamp-2">{post.title}</h2>
+        <h2 className="text-xl font-semibold line-clamp-2">{decodedTitle}</h2>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
@@ -142,7 +155,7 @@ const BlogCard = ({ post }) => {
         </div>
         <div
           className="line-clamp-3 text-sm text-muted-foreground prose prose-sm"
-          dangerouslySetInnerHTML={{ __html: post.excerpt }}
+          dangerouslySetInnerHTML={{ __html: decodedExcerpt }}
         />
       </CardContent>
       <CardFooter>

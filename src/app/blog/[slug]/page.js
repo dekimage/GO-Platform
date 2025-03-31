@@ -103,8 +103,12 @@ const BlogPost = observer(() => {
         <div className="relative h-[35vh] min-h-[350px] w-full">
           <div className="absolute inset-0">
             <Image
-              src={post.thumbnail}
-              alt={post.title}
+              src={
+                post.thumbnail.startsWith("http")
+                  ? post.thumbnail
+                  : "/default-thumbnail.jpg"
+              }
+              alt={he.decode(post.title)}
               width={1920}
               height={1080}
               className="w-full h-full object-cover"
@@ -124,7 +128,7 @@ const BlogPost = observer(() => {
                   Blog
                 </Link>
                 <span>/</span>
-                <span className="truncate">{post.title}</span>
+                <span className="truncate">{he.decode(post.title)}</span>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold mb-4">

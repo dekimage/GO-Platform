@@ -5,35 +5,24 @@ import he from "he";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
-  const category = searchParams.get("category");
 
   try {
     let url;
     if (slug) {
-      // Fetch a single post by slug
       url = `${process.env.WORDPRESS_API_URL}/posts?_embed&slug=${slug}`;
-    } else if (category) {
-      // Fetch posts by category name
-      url = `${
-        process.env.WORDPRESS_API_URL
-      }/posts?_embed&per_page=20&categories=${await getCategoryId(category)}`;
     } else {
-      // Fetch all posts (existing functionality)
-      url = `${process.env.WORDPRESS_API_URL}/posts?_embed&per_page=10`;
+      url = `${process.env.WORDPRESS_API_URL}/posts?_embed&per_page=100`;
     }
 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch from WordPress");
 
     const data = await response.json();
-    // console.log("Raw WordPress API response:", JSON.stringify(data, null, 2));
 
     if (slug) {
-      // For single post, return the first (and only) item
       const formattedPost = data.length > 0 ? formatBlogPost(data[0]) : null;
       return NextResponse.json(formattedPost);
     } else {
-      // For multiple posts, format all of them
       const formattedBlogs = formatBlogPosts(data);
       return NextResponse.json(formattedBlogs);
     }
@@ -96,6 +85,11 @@ export async function POST(request) {
 }
 
 function cleanWordPressContent(content) {
+  // Check if content exists and is a string
+  if (!content || typeof content !== "string") {
+    return "";
+  }
+
   // First remove unnecessary newlines and spaces from WordPress
   let cleanContent = content
     // Remove excessive newlines and spaces
@@ -106,26 +100,20 @@ function cleanWordPressContent(content) {
   cleanContent = cleanContent
     // Add space after horizontal rules
     .replace(/<hr[^>]*>/g, '<hr class="wp-block-separator" />\n\n')
-
     // Handle headings
     .replace(/<h([1-6])[^>]*>(.*?)<\/h\1>/g, (match, level, content) => {
       return `\n\n<h${level}>${content}</h${level}>\n\n`;
     })
-
     // Handle paragraphs
     .replace(/<p[^>]*>(.*?)<\/p>/g, "<p>$1</p>\n\n")
-
     // Handle lists
     .replace(/<ul[^>]*>/g, "\n<ul>")
     .replace(/<\/ul>/g, "</ul>\n\n")
     .replace(/<li[^>]*>(.*?)<\/li>\n/g, "<li>$1</li>")
-
     // Handle figures/images
     .replace(/<figure[^>]*>(.*?)<\/figure>/g, "\n\n<figure>$1</figure>\n\n")
-
     // Clean up multiple spaces
     .replace(/\s\s+/g, " ")
-
     // Clean up multiple newlines
     .replace(/\n\n\n+/g, "\n\n");
 
@@ -133,21 +121,55 @@ function cleanWordPressContent(content) {
 }
 
 function formatBlogPost(post) {
-  const cleanContent = post.content ? cleanWordPressContent(post.content) : "";
-  const cleanTitle = post.title ? post.title.replace(/[""]/g, '"') : "";
+  let categories = [];
+  if (
+    post._embedded &&
+    post._embedded["wp:term"] &&
+    post._embedded["wp:term"][0]
+  ) {
+    categories = post._embedded["wp:term"][0].map((term) => term.name);
+  }
+  if (categories.length === 0) {
+    categories.push("Uncategorized");
+  }
+
+  const thumbnail = post.jetpack_featured_media_url || "/default-thumbnail.jpg";
 
   return {
     id: post.id,
-    title: cleanTitle,
+    title: post.title.rendered || "Untitled",
     slug: post.slug,
-    content: cleanContent,
-    excerpt: post.excerpt,
-    date: post.date,
-    categories: post.categories,
-    thumbnail: post.thumbnail,
+    content: post.content ? post.content.rendered : "",
+    excerpt: post.excerpt ? post.excerpt.rendered : "",
+    date: post.date ? new Date(post.date).toLocaleDateString() : "No date",
+    categories,
+    thumbnail,
   };
 }
 
 function formatBlogPosts(posts) {
   return posts.map(formatBlogPost);
+}
+
+// Add this function to fetch category names
+async function getCategoryNames(categoryIds) {
+  try {
+    // Fetch all categories in one request
+    const response = await fetch(`${process.env.WORDPRESS_API_URL}/categories`);
+    if (!response.ok) throw new Error("Failed to fetch categories");
+
+    const categories = await response.json();
+
+    // Create a map of id to name
+    const categoryMap = categories.reduce((map, cat) => {
+      map[cat.id] = cat.name;
+      return map;
+    }, {});
+
+    // Convert IDs to names, fallback to "Uncategorized" if not found
+    return categoryIds.map((id) => categoryMap[id] || "Uncategorized");
+  } catch (error) {
+    console.error("Error fetching category names:", error);
+    return ["Uncategorized"];
+  }
 }
