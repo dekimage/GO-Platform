@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebase-admin";
 import PackageList from "@/components/packages/PackageList";
-import FeaturedPackageCard from "@/components/packages/FeaturedPackageCard";
+import FeaturedPackageCardWrapper from "@/components/packages/FeaturedPackageCardWrapper";
 
 // This enables Static Site Generation
 export const revalidate = 3600; // Revalidate every hour
@@ -32,9 +32,10 @@ async function getPackages() {
   });
 }
 
+// Server component
 export default async function PackagesPage() {
   const packages = await getPackages();
-
+  
   // Sort packages by date to find the latest one
   const sortedPackages = [...packages].sort((a, b) => {
     const dateA = new Date(`${a.month} 1, ${a.year}`);
@@ -54,7 +55,7 @@ export default async function PackagesPage() {
           <h2 className="text-2xl font-semibold mb-4">
             Featured: Package for this Month!
           </h2>
-          <FeaturedPackageCard package={latestPackage} />
+          <FeaturedPackageCardWrapper package={latestPackage} />
         </div>
       )}
 

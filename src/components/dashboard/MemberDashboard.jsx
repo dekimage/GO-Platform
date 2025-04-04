@@ -171,8 +171,14 @@ const MemberDashboard = observer(() => {
                   src="/g1/g1-mvp.png"
                   alt="Top Rat Game"
                   fill
-                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                  className="object-cover transition-transform duration-300 hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute bottom-2 left-2 right-2">
+                  <p className="text-white text-xs font-medium">Top Rat</p>
+                </div>
               </div>
               <CardContent className="pt-4">
                 <h3 className="font-medium">Top Rat</h3>
