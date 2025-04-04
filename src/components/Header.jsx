@@ -61,9 +61,11 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1 ml-6">
-            <Button asChild variant={isActive("/dashboard")} size="sm">
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
+            {user && (
+              <Button asChild variant={isActive("/dashboard")} size="sm">
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            )}
             <Button asChild variant={isActive("/packages")} size="sm">
               <Link href="/packages">Packages</Link>
             </Button>
@@ -156,7 +158,16 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <nav className="flex flex-col p-4 space-y-2">
-            <Button
+            {user && (
+              <Button
+                asChild
+                variant={isActive("/dashboard")}
+                className="justify-start"
+              >
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            )}
+              <Button
               asChild
               variant={isActive("/dashboard")}
               className="justify-start"

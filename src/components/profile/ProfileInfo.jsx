@@ -223,11 +223,11 @@ export default function ProfileInfo({
             className="w-full"
             asChild
           >
-            <Link href="/membership">
-              {subscriptionStatus === "Active"
-                ? "Manage Subscription"
-                : "Subscribe Now"}
-            </Link>
+            {subscriptionStatus === "Active" ? (
+              <span>Subscribed</span>
+            ) : (
+              <Link href="/membership">Subscribe Now</Link>
+            )}
           </Button>
         </CardContent>
       </Card>
