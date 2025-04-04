@@ -21,14 +21,36 @@ const MemberDashboard = observer(() => {
   // Calculate membership duration in months
   const getMembershipDuration = () => {
     if (!user?.joined) return 0;
-    const joined = new Date(user.joined);
+    
+    // Handle Firebase Timestamp objects
+    const joinedDate = user.joined?.toDate ? user.joined.toDate() : new Date(user.joined);
+    
+    // Check if the date is valid
+    if (isNaN(joinedDate.getTime())) return 0;
+    
     const now = new Date();
-    return Math.floor((now - joined) / (1000 * 60 * 60 * 24 * 30));
+    return Math.floor((now - joinedDate) / (1000 * 60 * 60 * 24 * 30));
   };
 
   const formatDate = (date) => {
     if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
+    
+    // Handle Firebase Timestamp objects with _seconds and _nanoseconds
+    if (date._seconds) {
+      return new Date(date._seconds * 1000).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+    
+    // Handle Firebase Timestamp objects with toDate method
+    const dateObj = date?.toDate ? date.toDate() : new Date(date);
+    
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) return "N/A";
+    
+    return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
+import { BlogCard } from "../blog/page";
 
 const GamesPage = observer(() => {
   const [games, setGames] = useState([]);
@@ -65,7 +66,7 @@ const GamesPage = observer(() => {
       {games.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <BlogCard key={game.id} post={game} />
           ))}
         </div>
       ) : (
@@ -80,46 +81,6 @@ const GamesPage = observer(() => {
   );
 });
 
-const GameCard = ({ game }) => {
-  return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <div className="relative h-48 overflow-hidden">
-        <Image
-          src={game.thumbnail}
-          alt={game.title}
-          fill
-          className="object-cover transition-transform hover:scale-105"
-        />
-      </div>
-      <CardContent className="p-5 flex-grow flex flex-col">
-        <div className="flex gap-2 mb-3 flex-wrap">
-          {game.categories
-            .filter((cat) => cat.toLowerCase() !== "game")
-            .map((category) => (
-              <span
-                key={category}
-                className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
-              >
-                {category}
-              </span>
-            ))}
-        </div>
 
-        <h2 className="text-xl font-bold mb-3">{game.title}</h2>
-
-        <div
-          className="text-muted-foreground text-sm mb-4 flex-grow"
-          dangerouslySetInnerHTML={{ __html: game.excerpt }}
-        />
-
-        <Link href={`/blog/${game.slug}`} className="mt-auto">
-          <Button variant="outline" className="w-full">
-            Learn More
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
-};
 
 export default GamesPage;

@@ -10,64 +10,73 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, Clock, User } from "lucide-react";
 import Link from "next/link";
 import he from "he";
-
-import MobxStore from "@/mobx";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
 import Image from "next/image";
 
 const BlogPage = observer(() => {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    MobxStore.fetchBlogs();
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/wordpress?category=blog");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch blogs");
+        }
+
+        const data = await response.json();
+        setBlogs(data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+        setError("Failed to load blogs. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
   }, []);
 
-  if (MobxStore.blogsLoading) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
-  const filteredPosts = MobxStore.blogs
-    .filter((post) => {
-      const matchesSearch = post.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" ||
-        post.categories.some(
-          (category) =>
-            String(category).toLowerCase() === selectedCategory.toLowerCase()
-        );
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-4xl font-bold mb-8">Blog</h1>
+        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  // Get unique categories and ensure they're strings
-  const categories = [
-    ...new Set(
-      MobxStore.blogs
-        .flatMap((post) => post.categories)
-        .filter(Boolean)
-        .map((category) => String(category))
-    ),
-  ];
+  const filteredPosts = blogs.filter((post) => {
+    return post.title.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-strike uppercase mb-4">Blog</h1>
+      <h1 className="text-4xl font-bold mb-4">Blog</h1>
+      <p className="text-muted-foreground mb-8">
+        Explore our latest articles, tutorials, and insights from the Galactic
+        Omnivore team.
+      </p>
 
-      {/* Filters */}
+      {/* Search Filter */}
       <div className="flex gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -78,22 +87,6 @@ const BlogPage = observer(() => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem
-                key={String(category)}
-                value={String(category).toLowerCase()}
-              >
-                {String(category)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Blog Grid */}
@@ -104,13 +97,18 @@ const BlogPage = observer(() => {
           ))}
         </div>
       ) : (
-        <p className="text-center text-xl mt-8">No blogs found.</p>
+        <div className="text-center py-12">
+          <p className="text-xl mb-4">No blog posts found.</p>
+          <p className="text-muted-foreground">
+            Check back soon for our latest articles!
+          </p>
+        </div>
       )}
     </div>
   );
 });
 
-const BlogCard = ({ post }) => {
+export const BlogCard = ({ post }) => {
   // Calculate read time (rough estimate)
   const wordCount = post.content.split(" ").length;
   const readTime = Math.ceil(wordCount / 200);
@@ -120,50 +118,50 @@ const BlogCard = ({ post }) => {
   const decodedExcerpt = he.decode(post.excerpt);
 
   return (
-    <Card className="overflow-hidden">
-      <div className="relative h-48 overflow-hidden">
-        <Image
-          src={post.thumbnail}
-          alt={decodedTitle}
-          width={500}
-          height={500}
-          className="object-cover w-full h-full transition-transform hover:scale-105"
-        />
-      </div>
-      <CardHeader>
-        <div className="flex gap-2 mb-2 flex-wrap">
-          {post.categories.map((category) => (
-            <span
-              key={category}
-              className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
-            >
-              {category}
-            </span>
-          ))}
+    <Link href={`/blog/${post.slug}`} className="block">
+      <Card className="overflow-hidden cursor-pointer transition-all hover:shadow-md">
+        <div className="relative h-48 overflow-hidden">
+          <Image
+            src={post.thumbnail}
+            alt={decodedTitle}
+            width={500}
+            height={500}
+            className="object-cover w-full h-full transition-transform hover:scale-105"
+          />
         </div>
-        <h2 className="text-xl font-semibold line-clamp-2">{decodedTitle}</h2>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{readTime} min read</span>
+        <CardHeader>
+          <div className="flex gap-2 mb-2 flex-wrap">
+            {post.categories.map((category) => (
+              <span
+                key={category}
+                className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
+              >
+                {category}
+              </span>
+            ))}
           </div>
-          <div className="flex items-center gap-1">
-            <span>{post.date}</span>
+          <h2 className="text-xl font-semibold line-clamp-2">{decodedTitle}</h2>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>{readTime} min read</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>{post.date}</span>
+            </div>
           </div>
-        </div>
-        <div
-          className="line-clamp-3 text-sm text-muted-foreground prose prose-sm"
-          dangerouslySetInnerHTML={{ __html: decodedExcerpt }}
-        />
-      </CardContent>
-      <CardFooter>
-        <Link href={`/blog/${post.slug}`} className="w-full">
+          <div
+            className="line-clamp-3 text-sm text-muted-foreground prose prose-sm"
+            dangerouslySetInnerHTML={{ __html: decodedExcerpt }}
+          />
+        </CardContent>
+        <CardFooter>
           <Button className="w-full">Read More</Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 };
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { LoadingSpinner } from "@/reusable-ui/LoadingSpinner";
+import { BlogCard } from "../blog/page";
 
 const InitiativesPage = observer(() => {
   const [initiatives, setInitiatives] = useState([]);
@@ -63,9 +64,9 @@ const InitiativesPage = observer(() => {
       </p>
 
       {initiatives.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initiatives.map((initiative) => (
-            <InitiativeCard key={initiative.id} initiative={initiative} />
+            <BlogCard key={initiative.id} post={initiative} />
           ))}
         </div>
       ) : (
@@ -82,48 +83,5 @@ const InitiativesPage = observer(() => {
   );
 });
 
-const InitiativeCard = ({ initiative }) => {
-  return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <div className="flex flex-col md:flex-row h-full">
-        <div className="relative h-48 md:h-auto md:w-1/3 overflow-hidden">
-          <Image
-            src={initiative.thumbnail}
-            alt={initiative.title}
-            fill
-            className="object-cover transition-transform hover:scale-105"
-          />
-        </div>
-        <CardContent className="p-5 flex-grow md:w-2/3 flex flex-col">
-          <div className="flex gap-2 mb-3 flex-wrap">
-            {initiative.categories
-              .filter((cat) => cat.toLowerCase() !== "initiative")
-              .map((category) => (
-                <span
-                  key={category}
-                  className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
-                >
-                  {category}
-                </span>
-              ))}
-          </div>
-
-          <h2 className="text-xl font-bold mb-3">{initiative.title}</h2>
-
-          <div
-            className="text-muted-foreground text-sm mb-4 flex-grow"
-            dangerouslySetInnerHTML={{ __html: initiative.excerpt }}
-          />
-
-          <Link href={`/blog/${initiative.slug}`} className="mt-auto">
-            <Button variant="outline" className="w-full">
-              Learn More
-            </Button>
-          </Link>
-        </CardContent>
-      </div>
-    </Card>
-  );
-};
 
 export default InitiativesPage;

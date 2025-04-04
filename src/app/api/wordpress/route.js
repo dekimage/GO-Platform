@@ -5,6 +5,7 @@ import he from "he";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
+  const category = searchParams.get("category");
 
   try {
     let url;
@@ -12,12 +13,42 @@ export async function GET(request) {
       url = `${process.env.WORDPRESS_API_URL}/posts?_embed&slug=${slug}`;
     } else {
       url = `${process.env.WORDPRESS_API_URL}/posts?_embed&per_page=100`;
+      
+      // Add category filter if specified
+      if (category && category !== "all") {
+        try {
+          // First, get the category ID
+          const categoryId = await getCategoryId(category);
+          console.log(`Category ID for "${category}":`, categoryId);
+          
+          if (categoryId) {
+            // Use the category ID for filtering
+            url += `&categories=${categoryId}`;
+            console.log(`Filtering by category ID: ${categoryId} for category: ${category}`);
+          } else {
+            console.log(`Category "${category}" not found. No filtering applied.`);
+            // Return empty array if category not found
+            return NextResponse.json([]);
+          }
+        } catch (categoryError) {
+          console.error("Error getting category ID:", categoryError);
+          // Return empty array if there's an error
+          return NextResponse.json([]);
+        }
+      }
     }
 
+    console.log(`Fetching from WordPress URL: ${url}`);
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch from WordPress");
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("WordPress API error response:", errorText);
+      throw new Error(`Failed to fetch from WordPress: ${response.status} ${response.statusText}`);
+    }
 
     const data = await response.json();
+    console.log(`Retrieved ${data.length} posts from WordPress`);
 
     if (slug) {
       const formattedPost = data.length > 0 ? formatBlogPost(data[0]) : null;
@@ -29,7 +60,7 @@ export async function GET(request) {
   } catch (error) {
     console.error("Error fetching from WordPress:", error);
     return NextResponse.json(
-      { error: "Failed to fetch from WordPress" },
+      { error: "Failed to fetch from WordPress", details: error.message },
       { status: 500 }
     );
   }
@@ -38,23 +69,62 @@ export async function GET(request) {
 // Helper function to get category ID from category name
 async function getCategoryId(categoryName) {
   try {
-    const response = await fetch(
-      `${
-        process.env.WORDPRESS_API_URL
-      }/categories?slug=${categoryName.toLowerCase()}`
-    );
-
-    if (!response.ok) throw new Error("Failed to fetch category");
+    console.log(`Fetching category ID for "${categoryName}" from WordPress API`);
+    const categoryUrl = `${process.env.WORDPRESS_API_URL}/categories?slug=${categoryName.toLowerCase()}`;
+    console.log(`Category URL: ${categoryUrl}`);
+    
+    const response = await fetch(categoryUrl);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to fetch category: ${response.status} ${response.statusText}`, errorText);
+      return null;
+    }
 
     const categories = await response.json();
+    console.log(`Categories response:`, JSON.stringify(categories, null, 2));
+    
     if (categories.length > 0) {
+      console.log(`Found category ID: ${categories[0].id} for "${categoryName}"`);
       return categories[0].id;
     }
 
-    return 0; // Return 0 if category not found
+    console.log(`No category found with slug "${categoryName}"`);
+    return null;
   } catch (error) {
     console.error("Error fetching category ID:", error);
-    return 0;
+    return null;
+  }
+}
+
+// Helper function to get tag ID from tag name
+async function getTagId(tagName) {
+  try {
+    console.log(`Fetching tag ID for "${tagName}" from WordPress API`);
+    const tagUrl = `${process.env.WORDPRESS_API_URL}/tags?slug=${tagName.toLowerCase()}`;
+    console.log(`Tag URL: ${tagUrl}`);
+    
+    const response = await fetch(tagUrl);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to fetch tag: ${response.status} ${response.statusText}`, errorText);
+      return null;
+    }
+
+    const tags = await response.json();
+    console.log(`Tags response:`, JSON.stringify(tags, null, 2));
+    
+    if (tags.length > 0) {
+      console.log(`Found tag ID: ${tags[0].id} for "${tagName}"`);
+      return tags[0].id;
+    }
+
+    console.log(`No tag found with slug "${tagName}"`);
+    return null;
+  } catch (error) {
+    console.error("Error fetching tag ID:", error);
+    return null;
   }
 }
 
@@ -64,21 +134,45 @@ export async function POST(request) {
     let url = `${process.env.WORDPRESS_API_URL}/posts?_embed&per_page=10`;
 
     if (category && category !== "all") {
-      url += `&category=${category}`;
+      try {
+        // First, get the category ID
+        const categoryId = await getCategoryId(category);
+        console.log(`Category ID for "${category}":`, categoryId);
+        
+        if (categoryId) {
+          // Use the category ID for filtering
+          url += `&categories=${categoryId}`;
+          console.log(`Filtering by category ID: ${categoryId} for category: ${category}`);
+        } else {
+          console.log(`Category "${category}" not found. No filtering applied.`);
+          // Return empty array if category not found
+          return NextResponse.json([]);
+        }
+      } catch (categoryError) {
+        console.error("Error getting category ID:", categoryError);
+        // Return empty array if there's an error
+        return NextResponse.json([]);
+      }
     }
 
+    console.log(`Fetching from WordPress URL: ${url}`);
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch blogs from WordPress");
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("WordPress API error response:", errorText);
+      throw new Error(`Failed to fetch blogs from WordPress: ${response.status} ${response.statusText}`);
+    }
 
     const data = await response.json();
-    // console.log("Raw WordPress API response:", JSON.stringify(data, null, 2));
+    console.log(`Retrieved ${data.length} posts from WordPress`);
     const formattedBlogs = formatBlogPosts(data);
 
     return NextResponse.json(formattedBlogs);
   } catch (error) {
     console.error("Error fetching blogs:", error);
     return NextResponse.json(
-      { error: "Failed to fetch blogs" },
+      { error: "Failed to fetch blogs", details: error.message },
       { status: 500 }
     );
   }
