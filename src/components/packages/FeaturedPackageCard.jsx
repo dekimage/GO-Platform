@@ -16,11 +16,12 @@ export default function FeaturedPackageCard({
         <div className="hidden md:grid md:grid-cols-2">
           <div className="relative h-80">
             <Image
-              src={pkg.coverImage}
+              src={`/g1/${pkg.coverImage}-h.png`}
               alt={pkg.title}
               fill
               className="object-cover"
-              sizes="50vw"
+              sizes="(max-width: 640px) 100vw, 50vw"
+              srcSet={`/g1/${pkg.coverImage}.png 640w, /g1/${pkg.coverImage}-h.png 1280w`}
             />
           </div>
 
@@ -66,11 +67,12 @@ export default function FeaturedPackageCard({
         <div className="md:hidden">
           <div className="relative h-64 w-full">
             <Image
-              src={pkg.coverImage}
+              src={`/g1/${pkg.coverImage}.png`}
               alt={pkg.title}
               fill
               className="object-cover"
-              sizes="100vw"
+              sizes="(max-width: 640px) 100vw, 50vw"
+              srcSet={`/g1/${pkg.coverImage}.png 640w, /g1/${pkg.coverImage}-h.png 1280w`}
             />
             <div className="absolute top-2 right-2">
               <Badge variant={isUnlocked ? "success" : "secondary"}>

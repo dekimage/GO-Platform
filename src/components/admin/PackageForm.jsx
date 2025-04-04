@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Music, Image, Code, Video, File } from "lucide-react";
+import { Plus, Trash2, Music, Image, Code, Video, File, Palette, Gamepad2 } from "lucide-react";
 
 // Helper function to create slugs
 const slugify = (text) => {
@@ -55,6 +55,8 @@ const assetTypes = [
   { value: "art", label: "Art", icon: Image },
   { value: "code", label: "Code", icon: Code },
   { value: "video", label: "Video", icon: Video },
+  { value: "design", label: "Design", icon: Palette },
+  { value: "game", label: "Game", icon: Gamepad2 },
 ];
 
 const currentYear = new Date().getFullYear();

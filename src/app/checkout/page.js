@@ -260,11 +260,7 @@ const CheckoutPage = observer(() => {
                   <div>
                     <h3 className="font-medium">3. Send Confirmation Email</h3>
                     <p className="text-muted-foreground mb-2">
-                      Send an email to
-                      <span className="font-medium">
-                        galacticomnivore@gmail.com
-                      </span>
-                      with:
+                      Send an email to galacticomnivore@gmail.com with:
                     </p>
                     <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                       <li>Subject: Membership Access</li>

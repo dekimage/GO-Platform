@@ -11,7 +11,9 @@ import {
   ClockIcon,
   TrophyIcon,
   CreditCardIcon,
+  ArrowRight,
 } from "lucide-react";
+import Image from "next/image";
 
 const MemberDashboard = observer(() => {
   const { user, permissions } = MobxStore;
@@ -163,10 +165,27 @@ const MemberDashboard = observer(() => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {user?.unlockedPackages?.slice(0, 3).map((packageId) => (
-            <Card key={packageId}>
-              <CardContent className="pt-6">
-                <h3 className="font-medium">{packageId}</h3>
-                <p className="text-sm text-muted-foreground">Unlocked</p>
+            <Card key={packageId} className="overflow-hidden">
+              <div className="relative h-40 w-full">
+                <Image
+                  src="/g1/g1-mvp.png"
+                  alt="Top Rat Game"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <CardContent className="pt-4">
+                <h3 className="font-medium">Top Rat</h3>
+                <p className="text-sm text-muted-foreground mb-2">May 2024</p>
+                <p className="text-sm mb-3 line-clamp-2">
+                  Dive into the toxic sewers with Mrale, a courageous rat on an endless platforming adventure.
+                </p>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link href={`/packages/${packageId}`}>
+                    View Details
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ))}

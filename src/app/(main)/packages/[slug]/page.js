@@ -18,6 +18,8 @@ import {
   Lock,
   ShoppingCart,
   Loader2,
+  Palette,
+  Gamepad2,
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/firebase";
@@ -154,6 +156,10 @@ export default function PackageDetailPage({ params }) {
         return <Code className="h-5 w-5" />;
       case "video":
         return <Video className="h-5 w-5" />;
+      case "design":
+        return <Palette className="h-5 w-5" />;
+      case "game":
+        return <Gamepad2 className="h-5 w-5" />;
       default:
         return <Download className="h-5 w-5" />;
     }
@@ -289,9 +295,9 @@ export default function PackageDetailPage({ params }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="relative h-[300px] w-full rounded-lg overflow-hidden mb-6">
+          <div className="relative w-full aspect-square max-w-[500px] mx-auto rounded-lg overflow-hidden mb-6">
             <Image
-              src={packageData.coverImage}
+              src={`/g1/${packageData.coverImage}.png`}
               alt={packageData.title}
               fill
               className="object-cover"
@@ -324,9 +330,9 @@ export default function PackageDetailPage({ params }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {packageData.assets.map((asset, index) => (
               <Card key={index} className="overflow-hidden">
-                <div className="relative h-40 w-full">
+                <div className="relative w-full aspect-square">
                   <Image
-                    src={asset.image}
+                    src={`/g1/${asset.image}.png`}
                     alt={asset.title}
                     fill
                     className="object-cover"

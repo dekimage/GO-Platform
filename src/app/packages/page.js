@@ -43,7 +43,7 @@ export default async function PackagesPage() {
   });
 
   const latestPackage = sortedPackages[0];
-  const pastPackages = sortedPackages.slice(1);
+  // const pastPackages = sortedPackages.slice(1);
 
   return (
     <div className="container mx-auto py-8">
@@ -58,10 +58,10 @@ export default async function PackagesPage() {
         </div>
       )}
 
-      <div className="mt-12">
+      {/* <div className="mt-12">
         <h2 className="text-2xl font-semibold mb-4">Past Months Packages</h2>
         <PackageList packages={pastPackages} />
-      </div>
+      </div> */}
     </div>
   );
 }

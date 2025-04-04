@@ -81,18 +81,40 @@ const YouTubeEmbed = ({ videoId }) => (
 );
 
 const GameOfTheMonth = () => (
-  <div className="py-16 border-b">
+  <div className="py-2 border-b">
     <div className="flex flex-col md:flex-row gap-8 items-center">
-      <div className="w-full md:w-1/2 space-y-6">
+      {/* Image section - will appear first on mobile */}
+      <div className="w-full md:w-1/2 order-1 md:order-2">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+          <Image
+            src="/g1/g1-mvp.png"
+            alt="Top Rat Game"
+            fill
+            className="object-cover transition-transform duration-500 hover:scale-105"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="absolute bottom-4 left-4 right-4">
+            <Badge className="bg-primary/90 text-white mb-2">
+              Game of the Month
+            </Badge>
+            <p className="text-white text-sm">
+              Available exclusively to members
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Content section - will appear second on mobile */}
+      <div className="w-full md:w-1/2 space-y-6 order-2 md:order-1">
         <div>
           <h2 className="text-lg font-medium text-primary mb-2">
             FEATURED THIS MONTH
           </h2>
-          <h3 className="text-3xl font-bold mb-4">Sakura Spirit</h3>
+          <h3 className="text-3xl font-bold mb-4">Top Rat</h3>
           <p className="text-lg text-muted-foreground mb-6">
-            A serene puzzle adventure set in a mystical Japanese garden.
-            Navigate through challenging levels while uncovering the secrets of
-            the ancient cherry blossoms.
+            Dive into the toxic sewers with Mrale, a courageous rat on an endless platforming adventure. 
+            Jump, dodge, and survive in this challenging game where every obstacle could be your last.
           </p>
         </div>
 
@@ -100,12 +122,12 @@ const GameOfTheMonth = () => (
           <h4 className="font-semibold">Includes:</h4>
           <ul className="space-y-2">
             {[
-              "Complete game with 30+ levels",
-              "Thematic art asset pack",
-              "Original soundtrack",
-              "Source code with documentation",
-              "Level design tutorial videos",
-              "Particle system implementation guide",
+              "Complete game with endless platforming",
+              "Top Rat Art Assets with 100+ sprites",
+              "Original atmospheric soundtrack",
+              "Game mechanics source code",
+              "UI & Level Design templates",
+              "Mini-games set in the Top Rat universe",
             ].map((item, index) => (
               <li key={index} className="flex items-start">
                 <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
@@ -121,27 +143,6 @@ const GameOfTheMonth = () => (
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
-      </div>
-
-      <div className="w-full md:w-1/2">
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-          <Image
-            src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop"
-            alt="Sakura Spirit Game"
-            fill
-            className="object-cover transition-transform duration-500 hover:scale-105"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-          <div className="absolute bottom-4 left-4 right-4">
-            <Badge className="bg-primary/90 text-white mb-2">
-              Game of the Month
-            </Badge>
-            <p className="text-white text-sm">
-              Available exclusively to members
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -192,61 +193,44 @@ const MembershipPage = observer(() => {
 
         <DetailSection
           title="Theme of the Month Art Packages"
-          description="Immerse yourself in our monthly themed art packages. This January, explore the serene beauty of Sakura with cherry blossom-inspired sprites, backgrounds, and UI elements. Perfect for creating atmospheric Japanese-themed games or adding a touch of spring to your projects."
-          imageSrc="/placeholder.svg?height=400&width=600"
-          imageAlt="January Sakura Theme Art Package Preview"
+          description="Immerse yourself in our monthly themed art packages. This May, explore the gritty world of Top Rat with toxic sewer-inspired sprites, backgrounds, and UI elements. Perfect for creating atmospheric platformer games or adding a touch of urban adventure to your projects."
+          imageSrc="/g1/g1-art.png"
+          imageAlt="May Top Rat Theme Art Package Preview"
         />
 
         <DetailSection
           title="Curated Music Packs"
-          description="Set the mood with our professionally composed music packs. Each month features a new theme, providing you with a variety of tracks to enhance your game's atmosphere. Listen to a preview of this month's Sakura-inspired melody:"
-          imageSrc="/placeholder.svg?height=400&width=600"
+          description="Set the mood with our professionally composed music packs. Each month features a new theme, providing you with a variety of tracks to enhance your game's atmosphere. Listen to a preview of this month's toxic sewer-inspired melody:"
+          imageSrc="/g1/g1-music.png"
           imageAlt="Music Pack Visualizer"
           reverse={true}
         >
-          <AudioPreview src="/path-to-audio-file.mp3" />
+          {/* <AudioPreview src="/path-to-audio-file.mp3" /> */}
         </DetailSection>
 
         <DetailSection
           title="Code Packs & Snippets"
-          description="Accelerate your development with our monthly code packs. Get access to optimized algorithms, shaders, and game mechanics tailored to the month's theme. This month, dive into particle systems for cherry blossom effects and smooth camera transitions inspired by Japanese scenery."
-          imageSrc="/placeholder.svg?height=400&width=600"
+          description="Accelerate your development with our monthly code packs. Get access to optimized algorithms, game mechanics, and systems tailored to the month's theme. This month, dive into endless platformer mechanics, obstacle generation, and power-up systems for your own games."
+          imageSrc="/g1/g1-code.png"
           imageAlt="Code Snippet Preview"
         />
 
         <DetailSection
-          title="Instructional Tutorial Videos"
-          description="Level up your game dev skills with our in-depth tutorial videos. Each month, we focus on techniques relevant to the theme. Learn how to create a parallax cherry blossom background, implement soft particle systems, or design intuitive UI inspired by Japanese aesthetics."
-          imageSrc="/placeholder.svg?height=400&width=600"
-          imageAlt="Tutorial Video Thumbnail"
+          title="UI & Level Design Templates"
+          description="Create engaging and challenging levels with our professional UI and level design templates. Each month, we focus on techniques relevant to the theme. Learn how to design intuitive UI for platformers, implement difficulty progression, or create engaging obstacle patterns."
+          imageSrc="/g1/g1-design.png"
+          imageAlt="UI & Level Design Preview"
           reverse={true}
-        >
-          <YouTubeEmbed videoId="dQw4w9WgXcQ" />
-        </DetailSection>
+        />
 
         <DetailSection
           title="Exclusive Monthly Game"
-          description="Get inspired by playing and deconstructing our monthly themed game. This January, enjoy 'Sakura Spirit', a serene puzzle game that showcases the art, music, and code techniques covered in this month's resources. Dive deep into its mechanics and learn how it was built!"
-          imageSrc="/placeholder.svg?height=400&width=600"
-          imageAlt="Sakura Spirit Game Screenshot"
-        >
-          <YouTubeEmbed videoId="dQw4w9WgXcQ" />
-        </DetailSection>
-
-        <DetailSection
-          title="Vibrant Community & Events"
-          description="Join our thriving community of game developers. Participate in monthly game jams, attend exclusive webinars with industry professionals, and connect with fellow creators in our members-only Discord server. Share your projects, get feedback, and collaborate on exciting new ideas!"
-          imageSrc="/placeholder.svg?height=400&width=600"
-          imageAlt="Community Event Collage"
-          reverse={true}
+          description="Get inspired by playing and deconstructing our monthly themed game. This May, enjoy 'Top Rat', an endless platformer that showcases the art, music, and code techniques covered in this month's resources. Dive deep into its mechanics and learn how it was built!"
+          imageSrc="/g1/g1-mvp.png"
+          imageAlt="Top Rat Game Screenshot"
         />
 
-        <DetailSection
-          title="Premium Newsletter"
-          description="Stay ahead of the game dev curve with our curated monthly newsletter. Get insights on industry trends, job opportunities, and spotlight features on successful indie developers. We'll also give you a sneak peek into next month's theme and resources, so you can start planning your projects early!"
-          imageSrc="/placeholder.svg?height=400&width=600"
-          imageAlt="Newsletter Preview"
-        />
+      
 
         <div className="text-center mt-16">
           <h2 className="text-3xl font-bold mb-4">

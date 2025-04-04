@@ -1,151 +1,91 @@
 export const dummyPackages = [
   {
-    id: "sakura-feb-2024",
-    slug: "sakura-february-2024",
-    title: "Sakura February 2024",
+    id: "top-rat-may-2024",
+    slug: "top-rat-may-2024",
+    title: "Top Rat May 2024",
     description:
-      "Immerse yourself in the beauty of Japanese cherry blossoms with this complete game asset pack. Perfect for creating serene, atmospheric games with a Japanese aesthetic.",
-    month: "February",
+      "Dive into the toxic sewers with Mrale, a courageous rat on an endless platforming adventure. Jump, dodge, and survive in this challenging game where every obstacle could be your last. Perfect for players who love fast-paced action and challenging gameplay.",
+    month: "May",
     year: "2024",
-    theme: "Japanese Sakura",
-    coverImage:
-      "https://images.unsplash.com/photo-1522383225653-ed111181a951?q=80&w=2000&auto=format&fit=crop",
+    theme: "Toxic Sewers",
+    coverImage: "g1-mvp",
     assets: [
       {
         type: "music",
-        title: "Sakura Music Pack",
+        title: "Top Rat Soundtrack",
         description:
-          "A collection of 10 traditional Japanese-inspired tracks perfect for creating a serene atmosphere.",
-        image:
-          "https://images.unsplash.com/photo-1528243097678-739049bbf2e7?q=80&w=2000&auto=format&fit=crop",
+          "A collection of 8 atmospheric tracks that capture the mood of the toxic sewers, featuring ambient sounds, tension-building melodies, and adrenaline-pumping chase music.",
+        image: "g1-music",
         downloadUrl: "https://drive.google.com/file/d/example1",
       },
       {
         type: "art",
-        title: "Sakura Art Assets",
+        title: "Top Rat Art Assets",
         description:
-          "Over 100 hand-drawn sprites and backgrounds featuring cherry blossoms, Japanese architecture, and characters.",
-        image:
-          "https://images.unsplash.com/photo-1503054435-6f59ebb1862a?q=80&w=2000&auto=format&fit=crop",
+          "Over 100 hand-drawn sprites and backgrounds featuring Mrale the rat, toxic sewer environments, obstacles, and collectibles in a gritty, detailed style.",
+        image: "g1-art",
         downloadUrl: "https://drive.google.com/file/d/example2",
       },
       {
         type: "code",
-        title: "Particle Effects System",
+        title: "Top Rat Game Mechanics",
         description:
-          "Ready-to-use code for creating beautiful cherry blossom particle effects in your game.",
-        image:
-          "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2000&auto=format&fit=crop",
+          "Ready-to-use code for the core gameplay mechanics including character movement, obstacle generation, score tracking, and power-up systems.",
+        image: "g1-code",
         downloadUrl: "https://drive.google.com/file/d/example3",
       },
       {
-        type: "video",
-        title: "Sakura Game Development Tutorial",
+        type: "design",
+        title: "Top Rat UI & Level Design",
         description:
-          "A comprehensive 2-hour tutorial on creating a complete 2D platformer with Japanese aesthetics.",
-        image:
-          "https://images.unsplash.com/photo-1551033406-611cf9a28f67?q=80&w=2000&auto=format&fit=crop",
+          "Complete UI design system and level design templates for creating challenging and engaging sewer levels with varying difficulty and obstacles.",
+        image: "g1-design",
         downloadUrl: "https://drive.google.com/file/d/example4",
       },
     ],
   },
   {
-    id: "medieval-mar-2024",
-    slug: "medieval-march-2024",
-    title: "Medieval March 2024",
+    id: "top-rat-jun-2024",
+    slug: "top-rat-june-2024",
+    title: "Top Rat June 2024",
     description:
-      "Transport players to a world of knights, castles, and epic quests with this comprehensive medieval-themed game asset pack.",
-    month: "March",
+      "The adventure continues in the second installment of Top Rat! Mrale faces new challenges in deeper, more toxic sections of the sewer. New enemies, power-ups, and environments await in this expansion pack.",
+    month: "June",
     year: "2024",
-    theme: "Medieval Fantasy",
-    coverImage:
-      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop",
+    theme: "Deep Sewers",
+    coverImage: "g1-mvp",
     assets: [
       {
         type: "music",
-        title: "Medieval Music Collection",
+        title: "Deep Sewer Soundscapes",
         description:
-          "8 orchestral tracks featuring lutes, flutes, and drums to set the perfect medieval atmosphere.",
-        image:
-          "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop",
+          "6 new atmospheric tracks that explore the darker, more mysterious sounds of the deep sewer system, with eerie ambient effects and intense boss battle music.",
+        image: "g1-music",
         downloadUrl: "https://drive.google.com/file/d/example5",
       },
       {
         type: "art",
-        title: "Medieval Asset Pack",
+        title: "Deep Sewer Art Pack",
         description:
-          "Over 150 sprites including knights, castles, villages, weapons, and UI elements in a consistent medieval style.",
-        image:
-          "https://images.unsplash.com/photo-1615310748170-37b5b1c8b23b?q=80&w=2000&auto=format&fit=crop",
+          "Over 80 new sprites including new enemies, environmental hazards, power-ups, and detailed background elements for the deeper sewer sections.",
+        image: "g1-art",
         downloadUrl: "https://drive.google.com/file/d/example6",
       },
       {
         type: "code",
-        title: "Combat System Framework",
+        title: "Boss Battle System",
         description:
-          "A complete melee combat system with hitboxes, damage calculation, and weapon types ready to integrate into your game.",
-        image:
-          "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2000&auto=format&fit=crop",
+          "A complete framework for implementing challenging boss battles with multiple phases, attack patterns, and special abilities for Mrale.",
+        image: "g1-code",
         downloadUrl: "https://drive.google.com/file/d/example7",
       },
       {
-        type: "video",
-        title: "Creating a Medieval RPG Tutorial",
+        type: "game",
+        title: "Top Rat Mini-Games",
         description:
-          "A step-by-step 3-hour tutorial on building a medieval RPG with inventory systems and quest mechanics.",
-        image:
-          "https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=2000&auto=format&fit=crop",
+          "Three complete mini-games set in the Top Rat universe, including a memory matching game, a puzzle escape, and a speed-running challenge.",
+        image: "g1-mvp",
         downloadUrl: "https://drive.google.com/file/d/example8",
-      },
-    ],
-  },
-  {
-    id: "peruvian-apr-2024",
-    slug: "peruvian-april-2024",
-    title: "Peruvian Shamans April 2024",
-    description:
-      "Explore the mystical world of Peruvian shamanism with this unique asset pack featuring authentic visuals and sounds from the Andes.",
-    month: "April",
-    year: "2024",
-    theme: "Peruvian Shamanism",
-    coverImage:
-      "https://images.unsplash.com/photo-1531794402352-5b4543a9e53b?q=80&w=2000&auto=format&fit=crop",
-    assets: [
-      {
-        type: "music",
-        title: "Andean Mystical Soundscapes",
-        description:
-          "12 authentic tracks featuring traditional Peruvian instruments like the charango, quena, and zampoñas.",
-        image:
-          "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?q=80&w=2000&auto=format&fit=crop",
-        downloadUrl: "https://drive.google.com/file/d/example9",
-      },
-      {
-        type: "art",
-        title: "Peruvian Shamanic Art Pack",
-        description:
-          "Over 120 assets including shamans, mystical creatures, Andean landscapes, and ritual objects with authentic designs.",
-        image:
-          "https://images.unsplash.com/photo-1590379492966-e076d8f84c2d?q=80&w=2000&auto=format&fit=crop",
-        downloadUrl: "https://drive.google.com/file/d/example10",
-      },
-      {
-        type: "code",
-        title: "Ritual Magic System",
-        description:
-          "A complete system for implementing shamanic rituals and magic spells with visual effects and sound integration.",
-        image:
-          "https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=2000&auto=format&fit=crop",
-        downloadUrl: "https://drive.google.com/file/d/example11",
-      },
-      {
-        type: "video",
-        title: "Peruvian Mythology Game Design",
-        description:
-          "A comprehensive tutorial on incorporating authentic Peruvian mythology and shamanic practices into game design.",
-        image:
-          "https://images.unsplash.com/photo-1551651653-c5186a1fbba2?q=80&w=2000&auto=format&fit=crop",
-        downloadUrl: "https://drive.google.com/file/d/example12",
       },
     ],
   },
