@@ -297,7 +297,8 @@ export default function PackageDetailPage({ params }) {
         <div className="lg:col-span-2">
           <div className="relative w-full aspect-square max-w-[500px] mx-auto rounded-lg overflow-hidden mb-6">
             <Image
-              src={`/g1/${packageData.coverImage}.png`}
+              // src={`/g1/${packageData.coverImage}.png`}
+              src={`/g1/g1-mvp.png`}
               alt={packageData.title}
               fill
               className="object-cover"
