@@ -120,7 +120,7 @@ const PricingPage = observer(() => {
     "Premium newsletter",
   ];
 
-  const tier2Benefits = Array(6).fill("???");
+  // const tier2Benefits = Array(6).fill("???");
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -160,13 +160,13 @@ const PricingPage = observer(() => {
       </div>
 
       <div className="mb-16">
-        <h2 className="text-2xl font-semibold text-center mb-8">Coming Soon</h2>
+        <h2 className="text-2xl font-semibold text-center mb-8">Tier 2 Packages</h2>
         <div className="max-w-md mx-auto">
           <PricingTier
-            title="Tier 2 - Premium"
-            price="??? Den."
-            description="Our premium tier with exclusive benefits for serious game developers."
-            benefits={tier2Benefits}
+            title="Premium Monthly"
+            price="Coming Soon"
+            description=""
+            benefits={[]}
             ctaText="Coming Soon"
             disabled={true}
           />

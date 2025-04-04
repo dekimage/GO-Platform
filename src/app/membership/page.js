@@ -80,19 +80,21 @@ const YouTubeEmbed = ({ videoId }) => (
   </div>
 );
 
-const GameOfTheMonth = () => (
+export const GameOfTheMonth = ({fromLanding}) => (
   <div className="py-2 border-b">
     <div className="flex flex-col md:flex-row gap-8 items-center">
       {/* Image section - will appear first on mobile */}
       <div className="w-full md:w-1/2 order-1 md:order-2">
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-          <Image
-            src="/g1/g1-mvp.png"
-            alt="Top Rat Game"
-            fill
-            className="object-cover transition-transform duration-500 hover:scale-105"
-            priority
-          />
+          <Link href="/membership">
+            <Image
+              src="/g1/g1-mvp.png"
+              alt="Top Rat Game"
+              fill
+              className="object-cover transition-transform duration-500 hover:scale-105 cursor-pointer"
+              priority
+            />
+          </Link>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-4 left-4 right-4">
             <Badge className="bg-primary/90 text-white mb-2">
@@ -138,8 +140,8 @@ const GameOfTheMonth = () => (
         </div>
 
         <Button size="lg" asChild className="mt-4">
-          <Link href="/pricing">
-            Become a Member
+          <Link href={fromLanding ? "/membership" : "/pricing"}>
+            {fromLanding ? "Learn More" : "Become a Member"}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>

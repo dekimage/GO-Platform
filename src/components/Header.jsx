@@ -18,7 +18,8 @@ import { Menu, X } from "lucide-react";
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { ModeToggle } from "./ui/themeButton";
-
+import Image from "next/image";
+import logoImg from "../assets/logo.png";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -34,6 +35,11 @@ export default function Header() {
     return () => unsubscribe();
   }, []);
 
+  // Close mobile menu when pathname changes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
   // Don't render the header on admin routes
   if (pathname?.startsWith("/admin")) {
     return null;
@@ -42,6 +48,7 @@ export default function Header() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      setIsMenuOpen(false); // Close menu after sign out
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -51,12 +58,17 @@ export default function Header() {
     return pathname === path ? "default" : "ghost";
   };
 
+  // Function to handle navigation and close menu
+  const handleNavigation = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-bold text-xl">Galactic Omnivore</span>
+          <Link href="/" className="flex items-center gap-2" onClick={handleNavigation}>
+          <Image src={logoImg} height={40} width={100} alt="Logo" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -111,13 +123,13 @@ export default function Header() {
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">Profile</Link>
+                      <Link href="/profile" onClick={handleNavigation}>Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile?tab=downloads">Downloads</Link>
+                      <Link href="/profile?tab=downloads" onClick={handleNavigation}>Downloads</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile?tab=settings">Settings</Link>
+                      <Link href="/profile?tab=settings" onClick={handleNavigation}>Settings</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
@@ -128,10 +140,10 @@ export default function Header() {
               ) : (
                 <div className="flex items-center gap-2">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href="/login">Log in</Link>
+                    <Link href="/login" onClick={handleNavigation}>Log in</Link>
                   </Button>
                   <Button asChild size="sm">
-                    <Link href="/signup">Sign up</Link>
+                    <Link href="/signup" onClick={handleNavigation}>Sign up</Link>
                   </Button>
                 </div>
               )}
@@ -164,43 +176,37 @@ export default function Header() {
                 variant={isActive("/dashboard")}
                 className="justify-start"
               >
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/dashboard" onClick={handleNavigation}>Dashboard</Link>
               </Button>
             )}
-              <Button
-              asChild
-              variant={isActive("/dashboard")}
-              className="justify-start"
-            >
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
+          
             <Button
               asChild
               variant={isActive("/packages")}
               className="justify-start"
             >
-              <Link href="/packages">Packages</Link>
+              <Link href="/packages" onClick={handleNavigation}>Packages</Link>
             </Button>
             <Button
               asChild
               variant={isActive("/games")}
               className="justify-start"
             >
-              <Link href="/games">Games</Link>
+              <Link href="/games" onClick={handleNavigation}>Games</Link>
             </Button>
             <Button
               asChild
               variant={isActive("/blog")}
               className="justify-start"
             >
-              <Link href="/blog">Blog</Link>
+              <Link href="/blog" onClick={handleNavigation}>Blog</Link>
             </Button>
             <Button
               asChild
               variant={isActive("/initiatives")}
               className="justify-start"
             >
-              <Link href="/initiatives">Initiatives</Link>
+              <Link href="/initiatives" onClick={handleNavigation}>Initiatives</Link>
             </Button>
 
             <Button
@@ -208,14 +214,14 @@ export default function Header() {
               variant={isActive("/pricing")}
               className="justify-start"
             >
-              <Link href="/pricing">Pricing</Link>
+              <Link href="/pricing" onClick={handleNavigation}>Pricing</Link>
             </Button>
             <Button
               asChild
               variant={isActive("/membership")}
               className="justify-start"
             >
-              <Link href="/membership">Membership</Link>
+              <Link href="/membership" onClick={handleNavigation}>Membership</Link>
             </Button>
 
             {user && (
@@ -224,7 +230,7 @@ export default function Header() {
                 variant={isActive("/profile")}
                 className="justify-start"
               >
-                <Link href="/profile">Profile</Link>
+                <Link href="/profile" onClick={handleNavigation}>Profile</Link>
               </Button>
             )}
           </nav>
